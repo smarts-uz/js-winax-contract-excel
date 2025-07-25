@@ -10,10 +10,9 @@ function getNumberWordOnly(num) {
   return full;
 }
 
-
 function getRussianMonthName(monthNumber) {
-    const date = new Date(2025, monthNumber - 1, 1); // oyni 0-index bilan ko'rsatish
-    return new Intl.DateTimeFormat('ru-RU', { month: 'long' }).format(date);
-  }
-  
-export { getNumberWordOnly, getRussianMonthName };
+  const date = new Date(2025, monthNumber - 1, 1); // oyni 0-index bilan ko'rsatish
+  return new Intl.DateTimeFormat('ru-RU', { month: 'long' }).format(date);
+}
+
+export { getNumberWordOnly, getRussianMonthName }; 

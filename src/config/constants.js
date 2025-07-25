@@ -1,0 +1,4 @@
+const PDF_FORMAT_CODE = 17;
+const WORD_TEMPLATE_NAME = 'Rental 274.docx';
+
+export { PDF_FORMAT_CODE, WORD_TEMPLATE_NAME }; 
