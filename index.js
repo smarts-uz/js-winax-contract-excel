@@ -13,7 +13,16 @@ if (process.argv.length < 4) {
     process.exit(1);
 }
 const ymlFilePath = process.argv[2];
-const templatePath = process.argv[3];
+let templatePath = process.argv[3];
+
+// if templatePath is empty - templatepath is equal to 
+if (!fs.existsSync(templatePath)) {
+    console.warn(`Template file not found at ${templatePath}. Using default template.`);
+    // Default template path
+    // Change this to your actual default template Path
+    templatePath = "d:\\Humans\\Building\\Rentalls\\Contract\\Projects\\Rentals 282.docx";
+}
+
 
 if (!fs.existsSync(ymlFilePath)) {
     console.error(`YAML file not found: ${ymlFilePath}`);
