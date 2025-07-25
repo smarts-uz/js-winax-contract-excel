@@ -8,6 +8,9 @@ import { exec } from 'child_process';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
+// confirmation modal in windows, with yes no
+
+
 if (process.argv.length < 4) {
     console.error('Usage: node index.js <data.yml> <template.docx>');
     process.exit(1);
@@ -49,3 +52,9 @@ else if (process.platform === 'darwin') {
 
     exec(`open "${outputPdfPath}"`);
 }
+
+// sleep for 2 seconds before exiting
+setTimeout(() => {
+    console.log('Exiting...');
+    process.exit(0);
+}, 2000);
