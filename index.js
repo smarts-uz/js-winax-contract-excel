@@ -3,6 +3,7 @@ import yaml from 'js-yaml';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { generateContractFiles } from './src/services/contract-generator.js';
+import { exec } from 'child_process';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -29,3 +30,13 @@ const { outputDocxPath, outputPdfPath } = generateContractFiles(data, ymlFilePat
 
 console.log('✅ Word yaratildi:', outputDocxPath);
 console.log('✅ PDF yaratildi:', outputPdfPath);
+
+// open created pdf file
+if (process.platform === 'win32') {
+  
+    exec(`start "" "${outputPdfPath}"`);
+}
+else if (process.platform === 'darwin') {
+
+    exec(`open "${outputPdfPath}"`);
+}
