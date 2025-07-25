@@ -17,15 +17,15 @@ Bu loyiha Word shablonidan (DOCX) va YAML ma'lumotlaridan avtomatik shartnoma (D
 
 ## Foydalanish
 
-1. `Rental 274.docx` shablon faylini loyihaning ildiziga joylashtiring (yoki `src/config/constants.js` dagi nomni o'zgartiring).
+1. Word shablon faylingizni (masalan, `Rental 274.docx`) tayyorlang.
 2. Ma'lumotlaringizni YAML formatida tayyorlang (namuna uchun `sample.yml` ga qarang).
 3. Quyidagi buyruqni ishga tushiring:
    ```bash
-   node index.js path/to/your/data.yml
+   node index.js path/to/your/data.yml path/to/your/template.docx
    ```
    Masalan:
    ```bash
-   node index.js "d:/My projects/Smart Software/JS/sample.yml"
+   node index.js "d:/My projects/Smart Software/JS/sample.yml" "d:/My projects/Smart Software/JS/Rental 274.docx"
    ```
 
 4. Natija fayllar `Contract/RC-.../` papkasida (YAML fayli joylashgan joyda) saqlanadi:
@@ -35,7 +35,7 @@ Bu loyiha Word shablonidan (DOCX) va YAML ma'lumotlaridan avtomatik shartnoma (D
 ## Loyihaning tuzilmasi
 ```
 ├── index.js                  # Asosiy entry point
-├── Rental 274.docx           # Word shablon fayli
+├── Rental 274.docx           # Word shablon fayli (istalgan nomda bo'lishi mumkin)
 ├── sample.yml                # Namuna YAML ma'lumot fayli
 ├── src
 │   ├── config

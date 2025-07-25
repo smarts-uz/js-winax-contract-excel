@@ -2,81 +2,131 @@ import winax from 'winax';
 import path from 'path';
 import { getNumberWordOnly, getRussianMonthName } from '../utils/number-to-text.js';
 import { exists, mkdirIfNotExists, getBaseName, getDirName } from '../utils/file-utils.js';
-import { PDF_FORMAT_CODE, WORD_TEMPLATE_NAME } from '../config/constants.js';
+import { PDF_FORMAT_CODE } from '../config/constants.js';
 
+/**
+ * Extracts and returns the uppercase initials from a company name.
+ * Removes special characters and splits by whitespace.
+ * @param {string} comName - The company name.
+ * @returns {string} - The initials in uppercase.
+ */
 function getComNameInitials(comName) {
-  if (!comName || typeof comName !== 'string') return '';
-  let cleaned = comName.replace(/[«»"']/g, '').trim();
-  let words = cleaned.split(/\s+/);
-  return words.map(w => w[0] ? w[0].toUpperCase() : '').join('');
+    if (!comName || typeof comName !== 'string') return '';
+    // Remove special characters and trim
+    let cleaned = comName.replace(/[«»"']/g, '').trim();
+    let words = cleaned.split(/\s+/);
+    // Take the first letter of each word, uppercase
+    return words.map(w => w[0] ? w[0].toUpperCase() : '').join('');
 }
 
+/**
+ * Generates a contract number in the format: RC-<Initials>-<DD>-<MM>-<YYYY>
+ * @param {Object} data - The contract data object.
+ * @returns {string} - The generated contract number.
+ */
 function generateContractNum(data) {
-  const day = String(data['Day']).padStart(2, '0');
-  const month = String(data['Month']).padStart(2, '0');
-  const year = String(data['Year']);
-  const comName = data['ComName'];
-  const initials = getComNameInitials(comName);
-  return `RC-${initials}-${day}-${month}-${year}`;
+    const day = String(data['Day']).padStart(2, '0');
+    const month = String(data['Month']).padStart(2, '0');
+    const year = String(data['Year']);
+    const comName = data['ComName'];
+    const initials = getComNameInitials(comName);
+    return `RC-${initials}-${day}-${month}-${year}`;
 }
 
-function generateContractFiles(data, ymlFilePath, __dirname) {
-  const contractNum = generateContractNum(data);
-  const word = new winax.Object('Word.Application');
-  word.Visible = false;
-  const docPath = path.resolve(__dirname, WORD_TEMPLATE_NAME);
-  const docBaseName = getBaseName(docPath, '.docx');
-  const ymlFolder = getDirName(ymlFilePath);
-  const contractFolder = path.join(ymlFolder, 'Contract');
-  mkdirIfNotExists(contractFolder);
-  const contractNumFolder = path.join(contractFolder, contractNum);
-  mkdirIfNotExists(contractNumFolder);
-  const outputDocxPath = path.join(contractNumFolder, `${docBaseName}.docx`);
-  const outputPdfPath = path.join(contractNumFolder, `${docBaseName}.pdf`);
-  const doc = word.Documents.Open(docPath);
-  const find = doc.Content.Find;
-  find.ClearFormatting();
-  const docContent = doc.Content.Text;
-  const regex = /\[([A-Za-z0-9_]+)\]/g;
-  let match;
-  const placeholders = new Set();
-  while ((match = regex.exec(docContent)) !== null) {
-    placeholders.add(match[1]);
-  }
-  for (const placeholder of placeholders) {
-    let replacementText = '';
-    if (placeholder === 'ContractNum') {
-      replacementText = contractNum;
-    } else if (placeholder === 'MonthText') {
-      const monthNumber = data['Month'];
-      replacementText = getRussianMonthName(Number(monthNumber));
-    } else if (placeholder.endsWith('Text')) {
-      const key = placeholder.replace(/Text$/, '');
-      const value = data[key];
-      if (value !== undefined) {
-        replacementText = getNumberWordOnly(Number(value));
-      } else {
-        replacementText = '';
-      }
-    } else {
-      replacementText = data[placeholder] !== undefined ? data[placeholder].toString() : '';
+/**
+ * Generates contract files (Word and PDF) by replacing placeholders in a template.
+ * @param {Object} data - The contract data object.
+ * @param {string} ymlFilePath - Path to the YAML data file.
+ * @param {string} templatePath - Path to the Word template file.
+ * @returns {Object} - Paths to the generated DOCX and PDF files.
+ */
+function generateContractFiles(data, ymlFilePath, templatePath) {
+    // Generate contract number
+    const contractNum = generateContractNum(data);
+
+    // Start Word application (invisible)
+    const word = new winax.Object('Word.Application');
+    word.Visible = false;
+
+    // Prepare paths and folder structure
+    const docPath = path.resolve(templatePath);
+    const docBaseName = getBaseName(docPath, '.docx');
+    const ymlFolder = getDirName(ymlFilePath);
+    const contractFolder = path.join(ymlFolder, 'Contract');
+    mkdirIfNotExists(contractFolder);
+    const contractNumFolder = path.join(contractFolder, contractNum);
+    mkdirIfNotExists(contractNumFolder);
+
+    // Output file paths
+    const outputDocxPath = path.join(contractNumFolder, `${docBaseName}.docx`);
+    const outputPdfPath = path.join(contractNumFolder, `${docBaseName}.pdf`);
+
+    // Open the Word template document
+    const doc = word.Documents.Open(docPath);
+
+    // Prepare to find and replace placeholders
+    const find = doc.Content.Find;
+    find.ClearFormatting();
+
+    // Extract all placeholders in the format [Placeholder]
+    const docContent = doc.Content.Text;
+    const regex = /\[([A-Za-z0-9_]+)\]/g;
+    let match;
+    const placeholders = new Set();
+    while ((match = regex.exec(docContent)) !== null) {
+        placeholders.add(match[1]);
     }
-    find.Text = `[${placeholder}]`;
-    find.Replacement.ClearFormatting();
-    find.Replacement.Text = replacementText;
-    find.Execute(
-      find.Text,
-      false, false, false, false, false,
-      true, 1, false,
-      find.Replacement.Text,
-      2
-    );
-  }
-  doc.SaveAs(outputDocxPath);
-  doc.SaveAs(outputPdfPath, PDF_FORMAT_CODE);
-  doc.Close(false);
-  word.Quit();
-  return { outputDocxPath, outputPdfPath };
+
+    // Replace each placeholder with the appropriate value
+    for (const placeholder of placeholders) {
+        let replacementText = '';
+
+        if (placeholder === 'ContractNum') {
+            // Special placeholder for contract number
+            replacementText = contractNum;
+        } else if (placeholder === 'MonthText') {
+            // Special placeholder for month name in Russian
+            const monthNumber = data['Month'];
+            replacementText = getRussianMonthName(Number(monthNumber));
+        } else if (placeholder.endsWith('Text')) {
+            // Placeholders ending with 'Text' are converted to words
+            const key = placeholder.replace(/Text$/, '');
+            const value = data[key];
+            if (value !== undefined) {
+                replacementText = getNumberWordOnly(Number(value));
+            } else {
+                replacementText = '';
+            }
+        } else {
+            // Default: use the value from data, or empty string if not found
+            replacementText = data[placeholder] !== undefined ? data[placeholder].toString() : '';
+        }
+
+        // Set up the find/replace operation
+        find.Text = `[${placeholder}]`;
+        find.Replacement.ClearFormatting();
+        find.Replacement.Text = replacementText;
+
+        // Execute the replacement throughout the document
+        find.Execute(
+            find.Text,
+            false, false, false, false, false,
+            true, 1, false,
+            find.Replacement.Text,
+            2 // wdReplaceAll
+        );
+    }
+
+    // Save the filled document as DOCX and PDF
+    doc.SaveAs(outputDocxPath);
+    doc.SaveAs(outputPdfPath, PDF_FORMAT_CODE);
+
+    // Close the document and quit Word
+    doc.Close(false);
+    word.Quit();
+
+    // Return the output file paths
+    return { outputDocxPath, outputPdfPath };
 }
 
-export { generateContractFiles }; 
+export { generateContractFiles };
