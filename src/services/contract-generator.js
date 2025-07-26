@@ -81,25 +81,40 @@ function generateContractFiles(data, ymlFilePath, templatePath) {
     for (const placeholder of placeholders) {
         let replacementText = '';
 
-        if (placeholder === 'ContractNum') {
-            // Special placeholder for contract number
-            replacementText = contractNum;
-        } else if (placeholder === 'MonthText') {
-            // Special placeholder for month name in Russian
-            const monthNumber = data['Month'];
-            replacementText = getRussianMonthName(Number(monthNumber));
-        } else if (placeholder.endsWith('Text')) {
-            // Placeholders ending with 'Text' are converted to words
-            const key = placeholder.replace(/Text$/, '');
-            const value = data[key];
-            if (value !== undefined) {
-                replacementText = getNumberWordOnly(Number(value));
-            } else {
-                replacementText = '';
-            }
-        } else {
-            // Default: use the value from data, or empty string if not found
-            replacementText = data[placeholder] !== undefined ? data[placeholder].toString() : '';
+        switch (true) {
+            case (placeholder === 'ContractNum'):
+                // Maxsus placeholder - shartnoma raqami
+                replacementText = contractNum;
+                break;
+            case (placeholder === 'MonthText'):
+                // Maxsus placeholder - rus tilida oy nomi
+                const monthNumber = data['Month'];
+                replacementText = getRussianMonthName(Number(monthNumber));
+                break;
+            case (placeholder.endsWith('Text')):
+                // 'Text' bilan tugaydigan placeholderlar sonni so'zga aylantiradi
+                const key = placeholder.replace(/Text$/, '');
+                const value = data[key];
+                if (value !== undefined) {
+                    replacementText = getNumberWordOnly(Number(value));
+                } else {
+                    replacementText = '';
+                }
+                break;
+            case (placeholder.endsWith('Phone')):
+                // 'Phone' bilan tugaydigan placeholderlar sonni so'zga aylantiradi
+                const keyPhone = placeholder.replace(/Phone$/, '');
+                const valuePhone = data[keyPhone + 'Phone'];
+                if (valuePhone !== undefined && valuePhone !== null && valuePhone !== "") {
+                    // valuePhone ni stringga aylantirib, replace ishlatamiz
+                    replacementText = String(valuePhone).replace(/^998/, '+998');
+                } else {
+                    replacementText = '';
+                }
+                break;
+            default:
+                // Default: data dan qiymatni oladi yoki bo'sh string
+                replacementText = data[placeholder] !== undefined ? data[placeholder].toString() : '';
         }
 
         // Set up the find/replace operation
