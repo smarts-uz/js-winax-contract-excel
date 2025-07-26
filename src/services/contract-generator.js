@@ -88,33 +88,44 @@ function generateContractFiles(data, ymlFilePath, templatePath) {
                 break;
             case (placeholder === 'MonthText'):
                 // Maxsus placeholder - rus tilida oy nomi
-                const monthNumber = data['Month'];
-                replacementText = getRussianMonthName(Number(monthNumber));
+                {
+                    const monthNumber = data['Month'];
+                    replacementText = getRussianMonthName(Number(monthNumber));
+                }
                 break;
             case (placeholder.endsWith('Text')):
                 // 'Text' bilan tugaydigan placeholderlar sonni so'zga aylantiradi
-                const key = placeholder.replace(/Text$/, '');
-                const value = data[key];
-                if (value !== undefined) {
-                    replacementText = getNumberWordOnly(Number(value));
-                } else {
-                    replacementText = '';
+                {
+                    const key = placeholder.replace(/Text$/, '');
+                    const value = data[key];
+                    if (value !== undefined && value !== null) {
+                        replacementText = getNumberWordOnly(Number(value));
+                    } else {
+                        replacementText = '';
+                    }
                 }
                 break;
             case (placeholder.endsWith('Phone')):
                 // 'Phone' bilan tugaydigan placeholderlar sonni so'zga aylantiradi
-                const keyPhone = placeholder.replace(/Phone$/, '');
-                const valuePhone = data[keyPhone + 'Phone'];
-                if (valuePhone !== undefined && valuePhone !== null && valuePhone !== "") {
-                    // valuePhone ni stringga aylantirib, replace ishlatamiz
-                    replacementText = String(valuePhone).replace(/^998/, '+998');
-                } else {
-                    replacementText = '';
+                {
+                    const keyPhone = placeholder.replace(/Phone$/, '');
+                    const valuePhone = data[keyPhone + 'Phone'];
+                    if (valuePhone !== undefined && valuePhone !== null && valuePhone !== "") {
+                        // valuePhone ni stringga aylantirib, replace ishlatamiz
+                        replacementText = String(valuePhone).replace(/^998/, '+998');
+                    } else {
+                        replacementText = '';
+                    }
                 }
                 break;
             default:
                 // Default: data dan qiymatni oladi yoki bo'sh string
-                replacementText = data[placeholder] !== undefined ? data[placeholder].toString() : '';
+                if (data[placeholder] !== undefined && data[placeholder] !== null) {
+                    // Fix: Only call toString if not null/undefined
+                    replacementText = data[placeholder].toString();
+                } else {
+                    replacementText = '';
+                }
         }
 
         // Set up the find/replace operation
