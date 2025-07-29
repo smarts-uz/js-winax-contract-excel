@@ -8,7 +8,7 @@ import { exec } from 'child_process';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// confirmation modal in windows, with yes no
+
 
 
 if (process.argv.length < 4) {
@@ -18,11 +18,9 @@ if (process.argv.length < 4) {
 const ymlFilePath = process.argv[2];
 let templatePath = process.argv[3];
 
-// if templatePath is empty - templatepath is equal to 
+
 if (!fs.existsSync(templatePath)) {
     console.warn(`Template file not found at ${templatePath}. Using default template.`);
-    // Default template path
-    // Change this to your actual default template Path
     templatePath = "d:\\Humans\\Building\\Rentalls\\Contract\\Projects\\Rentals 282.docx";
 }
 
@@ -36,14 +34,58 @@ if (!fs.existsSync(templatePath)) {
     process.exit(1);
 }
 
-const data = yaml.load(fs.readFileSync(ymlFilePath, 'utf8'));
+
+
+const yamlOptions = {
+    schema: yaml.JSON_SCHEMA,
+    onWarning: (e) => { console.warn('YAML ogohlantirishi:', e); }
+};
+
+const ymlRaw = fs.readFileSync(ymlFilePath, 'utf8');
+
+
+const ymlPatched = ymlRaw.split('\n').map(line => {
+    if (!line.includes(':') || line.trim().startsWith('#')) return line;
+
+    const idx = line.indexOf(':');
+    const key = line.slice(0, idx);
+    let value = line.slice(idx + 1).trim();
+
+    if (
+        (value.startsWith('"') && value.endsWith('"')) ||
+        (value.startsWith("'") && value.endsWith("'")) ||
+        value === 'null' || value === 'true' || value === 'false'
+    ) {
+        return line;
+    }
+
+    if (value === '' || value.startsWith('#')) {
+        return line;
+    }
+
+    if (/^\d{1,}$/.test(value)) {
+        return `${key}: "${value}"`;
+    }
+
+    if (/[",]/.test(value)) {
+        // Ichki ikki tirnoqlarni ekranga chiqarish uchun almashtiramiz
+        const safeValue = value.replace(/"/g, '\\"');
+        return `${key}: "${safeValue}"`;
+    }
+
+
+    return line;
+}).join('\n');
+
+const data = yaml.load(ymlPatched, yamlOptions);
+// console.log(data);
 
 const { outputDocxPath, outputPdfPath } = generateContractFiles(data, ymlFilePath, templatePath);
 
 console.log('✅ Word yaratildi:', outputDocxPath);
 console.log('✅ PDF yaratildi:', outputPdfPath);
 
-// open created pdf file
+
 if (process.platform === 'win32') {
   
     exec(`start "" "${outputPdfPath}"`);
@@ -53,7 +95,7 @@ else if (process.platform === 'darwin') {
     exec(`open "${outputPdfPath}"`);
 }
 
-// sleep for 2 seconds before exiting
+
 setTimeout(() => {
     console.log('Exiting...');
     process.exit(0);
