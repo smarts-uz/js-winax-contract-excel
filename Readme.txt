@@ -6,3 +6,6 @@ node "d:\FileType\Office\Develop\DOC\JS\winax\Smarts-Uz Js-Winax-Contract\js-win
 
 
 node "d:\FileType\Office\Develop\DOC\JS\winax\Smarts-Uz Js-Winax-Contract\js-winax-contract\index.js" "d:\FSystem\ALL\Humans\Rentalls\SR-EIjara\DRAGON GATE\ALL.contract" "d:\Humans\Building\Rentalls\Contract\Projects\Rentals 287.docx"
+
+
+node index.js "D:\My projects\Smart Software\JS\winax\js-winax-contract\App\ALL.contract" "D:\My projects\Smart Software\JS\winax\js-winax-contract\Rentals 293.docx"

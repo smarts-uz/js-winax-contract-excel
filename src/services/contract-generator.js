@@ -58,8 +58,8 @@ function generateContractFiles(data, ymlFilePath, templatePath) {
     mkdirIfNotExists(contractNumFolder);
 
     // Output file paths
-    const outputDocxPath = path.join(contractNumFolder, `${docBaseName}.docx`);
-    const outputPdfPath = path.join(contractNumFolder, `${docBaseName}.pdf`);
+    const outputDocxPath = path.join(contractNumFolder, `${contractNum}, ${docBaseName}.docx`);
+    const outputPdfPath = path.join(contractNumFolder, `${contractNum}, ${docBaseName}.pdf`);
 
     // Open the Word template document
     const doc = word.Documents.Open(docPath);
