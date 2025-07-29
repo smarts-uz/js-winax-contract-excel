@@ -17,6 +17,7 @@ if (process.argv.length < 4) {
 }
 const ymlFilePath = process.argv[2];
 let templatePath = process.argv[3];
+let isOpen = process.argv[4];
 
 
 if (!fs.existsSync(templatePath)) {
@@ -86,14 +87,16 @@ console.log('✅ Word yaratildi:', outputDocxPath);
 console.log('✅ PDF yaratildi:', outputPdfPath);
 
 
-if (process.platform === 'win32') {
-  
-    exec(`start "" "${outputPdfPath}"`);
+if (isOpen === 'true' || isOpen === '1') {
+    if (process.platform === 'win32') {
+        exec(`start "" "${outputDocxPath}"`);
+    } else if (process.platform === 'darwin') {
+        exec(`open "${outputDocxPath}"`);
+    } else {
+        console.warn('Platformani qo\'llab-quvvatlanmaydi:', process.platform);
+    }
 }
-else if (process.platform === 'darwin') {
 
-    exec(`open "${outputPdfPath}"`);
-}
 
 
 setTimeout(() => {
