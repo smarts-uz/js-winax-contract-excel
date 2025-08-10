@@ -9,3 +9,5 @@ node "d:\FileType\Office\Develop\DOC\JS\winax\Smarts-Uz Js-Winax-Contract\js-win
 
 
 node index.js "D:\My projects\Smart Software\JS\winax\js-winax-contract\App\ALL.contract" "D:\My projects\Smart Software\JS\winax\js-winax-contract\Rentals 293.docx"
+
+node index.js "d:\FSystem\ALL\Humans\Rentalls\BossLegal\TRADEWAVE EXPORTS\ALL.contract" "d:\Humans\Building\Rentalls\Contract\Projects\Rentals 303.docx"
