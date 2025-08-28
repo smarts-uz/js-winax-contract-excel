@@ -46,6 +46,10 @@ function generateContractFiles(data, ymlFilePath, templatePath) {
         ? data['Contract'] 
         : generateContractNum(data);
 
+    let area = data['Area'];
+
+    const company = data['MyName'].includes('SMART TEAMS') ? 'LLC' : 'Person';
+
     // Start Word application (invisible)
     const word = new winax.Object('Word.Application');
     word.Visible = false;
@@ -60,8 +64,8 @@ function generateContractFiles(data, ymlFilePath, templatePath) {
     mkdirIfNotExists(contractNumFolder);
 
     // Output file paths
-    const outputDocxPath = path.join(contractNumFolder, `${contractNum}, ${docBaseName}.docx`);
-    const outputPdfPath = path.join(contractNumFolder, `${contractNum}, ${docBaseName}.pdf`);
+    const outputDocxPath = path.join(contractNumFolder, `${contractNum}, ${area}-kv, ${company}, ${docBaseName}.docx`);
+    const outputPdfPath = path.join(contractNumFolder, `${contractNum}, ${area}-kv, ${company}, ${docBaseName}.pdf`);
 
     // Open the Word template document
     const doc = word.Documents.Open(docPath);
