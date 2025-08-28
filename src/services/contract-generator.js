@@ -41,8 +41,10 @@ function generateContractNum(data) {
  * @returns {Object} - Paths to the generated DOCX and PDF files.
  */
 function generateContractFiles(data, ymlFilePath, templatePath) {
-    // Generate contract number
-    const contractNum = generateContractNum(data);
+    // Use existing contract number if provided, otherwise generate new one
+    const contractNum = data['Contract'] && data['Contract'].trim() !== '' 
+        ? data['Contract'] 
+        : generateContractNum(data);
 
     // Start Word application (invisible)
     const word = new winax.Object('Word.Application');
@@ -83,18 +85,18 @@ function generateContractFiles(data, ymlFilePath, templatePath) {
 
         switch (true) {
             case (placeholder === 'ContractNum'):
-                // Maxsus placeholder - shartnoma raqami
+                // Special placeholder - contract number
                 replacementText = contractNum;
                 break;
             case (placeholder === 'MonthText'):
-                // Maxsus placeholder - rus tilida oy nomi
+                // Special placeholder - month name in Russian
                 {
                     const monthNumber = data['Month'];
                     replacementText = getRussianMonthName(Number(monthNumber));
                 }
                 break;
             case (placeholder.endsWith('Text')):
-                // 'Text' bilan tugaydigan placeholderlar sonni so'zga aylantiradi
+                // Placeholders ending with 'Text' convert numbers to words
                 {
                     const key = placeholder.replace(/Text$/, '');
                     const value = data[key];
@@ -106,12 +108,12 @@ function generateContractFiles(data, ymlFilePath, templatePath) {
                 }
                 break;
             case (placeholder.endsWith('Phone')):
-                // 'Phone' bilan tugaydigan placeholderlar sonni so'zga aylantiradi
+                // Placeholders ending with 'Phone' format phone numbers
                 {
                     const keyPhone = placeholder.replace(/Phone$/, '');
                     const valuePhone = data[keyPhone + 'Phone'];
                     if (valuePhone !== undefined && valuePhone !== null && valuePhone !== "") {
-                        // valuePhone ni stringga aylantirib, replace ishlatamiz
+                        // Convert valuePhone to string and add +998 prefix if needed
                         replacementText = String(valuePhone).replace(/^998/, '+998');
                     } else {
                         replacementText = '';
@@ -119,7 +121,7 @@ function generateContractFiles(data, ymlFilePath, templatePath) {
                 }
                 break;
             default:
-                // Default: data dan qiymatni oladi yoki bo'sh string
+                // Default: get value from data or empty string
                 if (data[placeholder] !== undefined && data[placeholder] !== null) {
                     // Fix: Only call toString if not null/undefined
                     replacementText = data[placeholder].toString();
