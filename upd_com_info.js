@@ -3,10 +3,18 @@ import path from 'path';
 import yaml from 'js-yaml';
 import winax from 'winax';
 
-// === CONFIG ===
-const yamlFilePath = path.resolve('D:\\Projects\\Smart Software\\JS\\js-winax-contract-excel\\ALL.contract');
-const excelFilePath = path.resolve('D:\\Projects\\Smart Software\\JS\\js-winax-contract-excel\\New_Copy.xlsx');
-const sheetName = 'SANTEX BENT';
+// === 0. Parse command line arguments ===
+// Usage: node script.js path/to/file.yaml path/to/excel.xlsx SheetName
+const [,, yamlArg, excelArg, sheetNameArg] = process.argv;
+
+if (!yamlArg || !excelArg || !sheetNameArg) {
+  console.error("Usage: node script.js <yamlFilePath> <excelFilePath> <sheetName>");
+  process.exit(1);
+}
+
+const yamlFilePath = path.resolve(yamlArg);
+const excelFilePath = path.resolve(excelArg);
+const sheetName = sheetNameArg;
 
 // === 1. Read YAML ===
 let data;
@@ -46,21 +54,12 @@ for (const key of Object.keys(data)) {
 
   while (found) {
     try {
-      // Overwrite the cell safely to avoid TRUE/FALSE issues
-      // Use String to ensure Excel does not auto-convert booleans/numbers
       found.Value = String(data[key]);
-      
-      // If you want to replace inside a sentence, uncomment below:
-      // found.Value = String(found.Value).replace(String(key), String(data[key]));
-
     } catch (err) {
       console.warn(`Failed to update cell ${found.Address}:`, err.message);
     }
 
-    // Find next occurrence
     found = sheet.Cells.FindNext(found);
-
-    // Stop if looped back to first or nothing found
     if (!found || found.Address === firstFound.Address) break;
   }
 }
