@@ -6,7 +6,7 @@ import winax from 'winax';
 // === START EXCEL ===
 export function openExcel(filePath) {
   const excel = new winax.Object('Excel.Application');
-  excel.Visible = true;
+  excel.Visible = false;
   const workbook = excel.Workbooks.Open(filePath);
   return { excel, workbook };
 }
