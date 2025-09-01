@@ -2,10 +2,15 @@ import fs from "fs";
 import path from "path";
 import winax from "winax";
 
-// === CONFIGURATION ===
-const basePath = "z:\\FileType\\ErdunShi"; // path you scan
-const saveDir = path.join(basePath, "ALL", "ActReco"); // target save directory
-const sourceFilePath = "d:\\Projects\\Smart Software\\JS\\js-winax-contract-excel\\New_Copy.xlsx";
+// === GET ARGUMENTS FROM CLI ===
+if (process.argv.length < 4) {
+  console.error("❌ Usage: node duplicate_tabs_by_folders.js <sourceFilePath> <basePath>");
+  process.exit(1);
+}
+
+const sourceFilePath = path.resolve(process.argv[2]);
+const basePath = path.resolve(process.argv[3]);
+const saveDir = path.join(basePath, "ALL", "ActReco");
 
 // === Ensure save directory exists ===
 if (!fs.existsSync(saveDir)) {
@@ -103,6 +108,20 @@ folderNames.forEach((name) => {
   newSheet.Name = uniqueName;
   newSheet.Cells(2, 2).Value = `Data for ${uniqueName}`;
   console.log(`✅ Created sheet: ${uniqueName}`);
+});
+
+// === Write folder names to "ALL" sheet ===
+let allSheet;
+try {
+  allSheet = newWorkbook.Sheets("ALL");
+} catch {
+  console.error("❌ 'ALL' sheet not found. Please make sure it exists in the template.");
+  process.exit(1);
+}
+
+console.log("✍️ Writing folder names into ALL sheet...");
+folderNames.forEach((name, index) => {
+  allSheet.Cells(6 + index, 1).Value = name; // Start from A6 downward
 });
 
 // === Save the workbook with incremental name ===

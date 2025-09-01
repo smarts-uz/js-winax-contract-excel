@@ -1,1 +1,1 @@
-node duplicate_tabs_by_folders.js "z:\FileType\ErdunShi\" "z:\FileType\ErdunShi\ALL\ActReco\ErdunShi ActReco 3.xlsx"
+node duplicate_tabs_by_folders.js "D:\Projects\Smart Software\JS\js-winax-contract-excel\New_Copy.xlsx" "Z:\FileType\ErdunShi"
