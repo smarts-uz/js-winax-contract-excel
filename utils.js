@@ -98,7 +98,7 @@ export function run(rootPath, excelFile, sheetName, folderPrefix, columnMap) {
     workbook.Save();
     workbook.Close(false);
     excel.Quit();
-    console.log('✅ Completed successfully!');
+    console.log(`✅ ${folderPrefix} completed successfully!`);
   } catch (err) {
     console.error('❌ Error:', err);
     excel.Quit();
