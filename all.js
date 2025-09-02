@@ -21,13 +21,21 @@ console.log(`Parent folder name: ${parentFolderName}`);
 const saveDir = path.join(path.dirname(contractFilePath), "ActReco");
 if (!fs.existsSync(saveDir)) fs.mkdirSync(saveDir, { recursive: true });
 
-// === Generate new file name with current date only ===
+// === Generate new file name with current date only, with versioning if exists ===
 const today = new Date();
 const yyyy = today.getFullYear();
 const mm = String(today.getMonth() + 1).padStart(2, "0");
 const dd = String(today.getDate()).padStart(2, "0");
-const newFileName = `${yyyy}-${mm}-${dd}.xlsx`;
-const newFilePath = path.join(saveDir, newFileName);
+const baseFileName = `${yyyy}-${mm}-${dd}.xlsx`;
+let newFileName = baseFileName;
+let newFilePath = path.join(saveDir, newFileName);
+
+let version = 1;
+while (fs.existsSync(newFilePath)) {
+  newFileName = `${yyyy}-${mm}-${dd}_v${version}.xlsx`;
+  newFilePath = path.join(saveDir, newFileName);
+  version++;
+}
 
 // === Start Excel ===
 const excel = new winax.Object("Excel.Application");
@@ -83,16 +91,18 @@ const rootPath = path.dirname(contractFilePath);
 const sheetName = parentFolderName;
 
 // Define Bank_OT_Columns as in your utils.js
-const Bank_OT_Columns = { date: 4, amount: 5, cost: 6, path: 7 };
-const Bank_IN_Columns = { date: 4, amount: 5, cost: 6, path: 7 };
-const EHF_IN_Columns = { date: 4, amount: 5, cost: 6, path: 7 };
-const Card_IN_Columns = { date: 4, amount: 5, cost: 6, path: 7 };
-const Card_OT_Columns = { date: 4, amount: 5, cost: 6, path: 7 };
+const Pricings_Columns = { date: 3, amount: 4 };
+const Bank_OT_Columns = { date: 6, amount: 7, path: 8 };
+const Bank_IN_Columns = { date: 4, amount: 5, path: 7 };
+const EHF_IN_Columns = { date: 4, amount: 5, path: 7 };
+const Card_IN_Columns = { date: 4, amount: 5, path: 7 };
+const Card_OT_Columns = { date: 4, amount: 5, path: 7 };
 
 
 // Call run with the newly created Excel file
-run(rootPath, excelFile, sheetName, "Bank-OT", Bank_OT_Columns);
-run(rootPath, excelFile, sheetName, "Bank-IN", Bank_IN_Columns);
-run(rootPath, excelFile, sheetName, "EHF-IN", EHF_IN_Columns);
-run(rootPath, excelFile, sheetName, "Card-IN", Card_IN_Columns);
-run(rootPath, excelFile, sheetName, "Card-OT", Card_OT_Columns);
+run(rootPath, newFilePath, sheetName, "Pricings", Pricings_Columns);
+run(rootPath, newFilePath, sheetName, "Bank-OT", Bank_OT_Columns);
+// run(rootPath, newFilePath, sheetName, "Bank-IN", Bank_IN_Columns);
+// run(rootPath, newFilePath, sheetName, "EHF-IN", EHF_IN_Columns);
+// run(rootPath, newFilePath, sheetName, "Card-IN", Card_IN_Columns);
+// run(rootPath, newFilePath, sheetName, "Card-OT", Card_OT_Columns);
