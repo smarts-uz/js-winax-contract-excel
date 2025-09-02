@@ -20,12 +20,7 @@ export function getSheet(workbook, sheetName) {
   }
 }
 
-// === FAST CLEAR RANGE ===
-export function clearRange(sheet, startRow, endRow, startCol, endCol) {
-  const colLetter = (col) => String.fromCharCode(64 + col); // 1=A, 2=B
-  const range = `${colLetter(startCol)}${startRow}:${colLetter(endCol)}${endRow}`;
-  sheet.Range(range).ClearContents();
-}
+
 
 // === SCAN SUBFOLDERS ===
 export function scanSubfolders(rootFolder, folderPrefix) {
@@ -83,14 +78,11 @@ export function run(rootPath, excelFile, sheetName, folderPrefix, columnMap) {
   try {
     const sheet = getSheet(workbook, sheetName);
 
-    // Clear previous data (rows 6-100)
-    clearRange(sheet, 6, 100, columnMap.date, columnMap.path);
-
     // Scan subfolders
     const folders = scanSubfolders(rootPath, folderPrefix);
 
     // Process and write
-    processFolders(sheet, folders, 6, columnMap);
+    processFolders(sheet, folders, 5, columnMap);
 
     // Calculate formulas
     calculateWorkbook(excel);
