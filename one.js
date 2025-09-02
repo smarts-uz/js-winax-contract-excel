@@ -24,21 +24,24 @@ console.log(`Parent folder name: ${parentFolderName}`);
 const saveDir = path.join(path.dirname(contractFilePath), "ActReco");
 if (!fs.existsSync(saveDir)) fs.mkdirSync(saveDir, { recursive: true });
 
+
+// === Generate new file name with date and versioning ===
 // === Generate new file name with date and versioning ===
 const today = new Date();
 const yyyy = today.getFullYear();
 const mm = String(today.getMonth() + 1).padStart(2, "0");
 const dd = String(today.getDate()).padStart(2, "0");
-const baseFileName = `${yyyy}-${mm}-${dd}.xlsx`;
-let newFileName = `ActReco, ${parentFolderName}, ${baseFileName}`;
-let newFilePath = path.join(saveDir, newFileName);
 
-let version = 1;
-while (fs.existsSync(newFilePath)) {
-  newFileName = `${yyyy}-${mm}-${dd}_v${version}.xlsx`;
+const baseName = `ActReco, ${parentFolderName}, ${yyyy}-${mm}-${dd}`;
+let version = 1; // Start from version 1
+let newFileName;
+let newFilePath;
+
+do {
+  newFileName = `${baseName}, ${version}.xlsx`;
   newFilePath = path.join(saveDir, newFileName);
   version++;
-}
+} while (fs.existsSync(newFilePath));
 
 // === Start Excel for duplication ===
 const excel = new winax.Object("Excel.Application");
@@ -89,13 +92,14 @@ const Bank_IN_Columns = { date: 9, amount: 10, path: 11 };
 const EHF_IN_Columns = { date: 12, amount: 13, path: 14 };
 const Card_IN_Columns = { date: 15, amount: 16, path: 17 };
 const Card_OT_Columns = { date: 18, amount: 19, path: 20 };
+const Bonuses_Columns = { date: 21, amount: 22, path: 23 };
 
-run(rootPath, newFilePath, sheetName, "Pricings", Pricings_Columns);
-run(rootPath, newFilePath, sheetName, "Bank-OT", Bank_OT_Columns);
-run(rootPath, newFilePath, sheetName, "Bank-IN", Bank_IN_Columns);
-run(rootPath, newFilePath, sheetName, "EHF-IN", EHF_IN_Columns);
-run(rootPath, newFilePath, sheetName, "Card-OT", Card_OT_Columns);
-run(rootPath, newFilePath, sheetName, "Card-IN", Card_IN_Columns);
+run(rootPath, newFilePath, sheetName, "Pricings", Pricings_Columns,5);
+run(rootPath, newFilePath, sheetName, "Bank-OT", Bank_OT_Columns,4);
+run(rootPath, newFilePath, sheetName, "Bank-IN", Bank_IN_Columns,4);
+run(rootPath, newFilePath, sheetName, "EHF-IN", EHF_IN_Columns,4);
+run(rootPath, newFilePath, sheetName, "Card-OT", Card_OT_Columns,4);
+run(rootPath, newFilePath, sheetName, "Bonuses", Bonuses_Columns,4);
 
 // === Placeholder Replacement ===
 let yamlData;

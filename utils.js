@@ -45,10 +45,44 @@ export function processFolders(sheet, items, startRow, columnMap, folderPrefix =
 
   // If folderPrefix is "Pricings", process .txt files
   if (folderPrefix === "Pricings") {
+    // Separate ALL files and date files
+    const allFiles = [];
+    const dateFiles = [];
+
     items.forEach(filePath => {
       const fileName = path.basename(filePath);
+      if (/^ALL\s+[\d,]+\.txt$/.test(fileName)) {
+        allFiles.push(filePath);
+      } else if (/^\d{4}-\d{2}-\d{2}\s+[\d,]+\.txt$/.test(fileName)) {
+        dateFiles.push(filePath);
+      }
+    });
 
-      // If file starts with "ALL", e.g. "ALL  1,300,000.txt"
+    // First process date files
+    dateFiles.forEach(filePath => {
+      const fileName = path.basename(filePath);
+      const match = fileName.match(/^(\d{4}-\d{2}-\d{2})\s+([\d,]+)\.txt$/);
+      if (!match) return;
+
+      const date = match[1];
+      const amount = match[2];
+
+      // Write date and amount
+      if (columnMap.date !== undefined) {
+        sheet.Cells(row, columnMap.date).Value = date;
+      }
+      if (columnMap.amount !== undefined) {
+        sheet.Cells(row, columnMap.amount).Value = amount;
+      }
+      if (columnMap.path !== undefined) {
+        sheet.Cells(row, columnMap.path).Value = filePath;
+      }
+      row++;
+    });
+
+    // Then process ALL files last
+    allFiles.forEach(filePath => {
+      const fileName = path.basename(filePath);
       const allMatch = fileName.match(/^ALL\s+([\d,]+)\.txt$/);
       if (allMatch) {
         // Get amount
@@ -76,28 +110,29 @@ export function processFolders(sheet, items, startRow, columnMap, folderPrefix =
           sheet.Cells(row, columnMap.path).Value = filePath;
         }
         row++;
-        return;
-      }
 
-      // Otherwise, expecting file name: YYYY-MM-DD amount.txt
-      const match = fileName.match(/^(\d{4}-\d{2}-\d{2})\s+([\d,]+)\.txt$/);
-      if (!match) return;
+        // Now, add another +1 month row
+        let nextYear = year;
+        let nextMonth = month + 1;
+        if (nextMonth > 12) {
+          nextYear += 1;
+          nextMonth = 1;
+        }
+        const dateStr2 = `${nextYear}-${String(nextMonth).padStart(2, '0')}-01`;
 
-      const date = match[1];
-      const amount = match[2];
-
-      // Write date and amount
-      if (columnMap.date !== undefined) {
-        sheet.Cells(row, columnMap.date).Value = date;
+        if (columnMap.date !== undefined) {
+          sheet.Cells(row, columnMap.date).Value = dateStr2;
+        }
+        if (columnMap.amount !== undefined) {
+          sheet.Cells(row, columnMap.amount).Value = amount;
+        }
+        if (columnMap.path !== undefined) {
+          sheet.Cells(row, columnMap.path).Value = filePath;
+        }
+        row++;
       }
-      if (columnMap.amount !== undefined) {
-        sheet.Cells(row, columnMap.amount).Value = amount;
-      }
-      if (columnMap.path !== undefined) {
-        sheet.Cells(row, columnMap.path).Value = filePath;
-      }
-      row++;
     });
+
     return;
   }
 
@@ -143,7 +178,7 @@ export function calculateWorkbook(excel) {
 }
 
 // === MAIN FUNCTION ===
-export function run(rootPath, excelFile, sheetName, folderPrefix, columnMap) {
+export function run(rootPath, excelFile, sheetName, folderPrefix, columnMap, startRow1) {
   const { excel, workbook } = openExcel(excelFile);
   try {
     const sheet = getSheet(workbook, sheetName);
@@ -152,7 +187,7 @@ export function run(rootPath, excelFile, sheetName, folderPrefix, columnMap) {
     const items = scanSubfolders(rootPath, folderPrefix);
 
     // Process and write
-    processFolders(sheet, items, 5, columnMap, folderPrefix);
+    processFolders(sheet, items, startRow1, columnMap, folderPrefix);
 
     // Calculate formulas
     calculateWorkbook(excel);

@@ -5,7 +5,7 @@ node add_finance_information "Z:\FileType\Company\SANTEX BENT" "D:\Projects\Smar
 node upd_com_info.js "D:\Projects\Smart Software\JS\js-winax-contract-excel\ALL.contract" "D:\Projects\Smart Software\JS\js-winax-contract-excel\New_Copy.xlsx" "SANTEX BENT"
 
 
-node one.js "d:\Projects\Smart Software\JS\js-winax-contract-excel\Company\CONSTANTA PROF COMMERCE\ALL.contract" "D:\Projects\Smart Software\JS\js-winax-contract-excel\Testings 25.xlsx"
+node one.js "d:\Projects\Smart Software\JS\js-winax-contract-excel\Company\CONSTANTA PROF COMMERCE\ALL.contract" "D:\Projects\Smart Software\JS\js-winax-contract-excel\Testings 32.xlsx"
 
 
 node all.js "z:\FileType\Testings\ALL.actreco" "D:\Projects\Smart Software\JS\js-winax-contract-excel\Testings 25.xlsx"
