@@ -7,8 +7,7 @@ Area: 18
 
 ContractNumber: Dilbek
 ContractPrefix: RC
-ContractFormat: "{Prefix}-{CName}-{Day}{Month}{Year}"
-
+ContractFormat: {{Prefix}}-{{CName}}-{{Day}}{{Month}}{{Year}}
 TelegramGroupID: -1002893551657
 TelegramTopicID: 130
 
@@ -37,7 +36,7 @@ Price3: 1560000
 Price6: 1500000
 Price12: 1400000 
 Price24: 1200000
-PriceTax: , с учётом всех налогов
+PriceTax: ", с учётом всех налогов"
 
 MyName: ООО «SMART TEAMS RENT», в лице директора Закирова Асрора Аскар угли
 MyAction: действующего
