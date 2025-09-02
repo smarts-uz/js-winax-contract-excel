@@ -93,16 +93,16 @@ const sheetName = parentFolderName;
 // Define Bank_OT_Columns as in your utils.js
 const Pricings_Columns = { date: 3, amount: 4 };
 const Bank_OT_Columns = { date: 6, amount: 7, path: 8 };
-const Bank_IN_Columns = { date: 4, amount: 5, path: 7 };
-const EHF_IN_Columns = { date: 4, amount: 5, path: 7 };
-const Card_IN_Columns = { date: 4, amount: 5, path: 7 };
-const Card_OT_Columns = { date: 4, amount: 5, path: 7 };
+const Bank_IN_Columns = { date: 9, amount: 10, path: 11 };
+const EHF_IN_Columns = { date: 12, amount: 13, path: 14 };
+const Card_IN_Columns = { date: 15, amount: 16, path: 17 };
+const Card_OT_Columns = { date: 18, amount: 19, path: 20 };
 
 
 // Call run with the newly created Excel file
 run(rootPath, newFilePath, sheetName, "Pricings", Pricings_Columns);
 run(rootPath, newFilePath, sheetName, "Bank-OT", Bank_OT_Columns);
-// run(rootPath, newFilePath, sheetName, "Bank-IN", Bank_IN_Columns);
-// run(rootPath, newFilePath, sheetName, "EHF-IN", EHF_IN_Columns);
-// run(rootPath, newFilePath, sheetName, "Card-IN", Card_IN_Columns);
-// run(rootPath, newFilePath, sheetName, "Card-OT", Card_OT_Columns);
+run(rootPath, newFilePath, sheetName, "Bank-IN", Bank_IN_Columns);
+run(rootPath, newFilePath, sheetName, "EHF-IN", EHF_IN_Columns);
+run(rootPath, newFilePath, sheetName, "Card-OT", Card_OT_Columns);
+run(rootPath, newFilePath, sheetName, "Card-IN", Card_IN_Columns);
