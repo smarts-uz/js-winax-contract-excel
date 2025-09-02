@@ -100,10 +100,30 @@ run(rootPath, newFilePath, sheetName, "Pricings", Pricings_Columns);
 // === Placeholder Replacement ===
 let yamlData;
 try {
-  const fileContents = fs.readFileSync(yamlFilePath, "utf8");
+  // Load YAML directly (no sanitization)
+  let fileContents = fs.readFileSync(yamlFilePath, "utf8");
   yamlData = yaml.load(fileContents);
 } catch (err) {
-  console.error("❌ Failed to parse YAML:", err.message);
+  // Show the YAML error message as in the context
+  if (err.mark && typeof err.mark.line === "number") {
+    const lines = err.message.split('\n');
+    console.error("❌ Failed to parse YAML:", lines[0]);
+    // Optionally, print the context lines if available
+    if (err.mark.buffer) {
+      const errorLine = err.mark.line + 1;
+      const contextLines = err.mark.buffer.split('\n').slice(Math.max(0, errorLine - 3), errorLine + 2);
+      contextLines.forEach((l, idx) => {
+        const lineNum = Math.max(0, errorLine - 3) + idx + 1;
+        if (lineNum === errorLine) {
+          console.error(`${lineNum} | ${l}\n--------------------------^`);
+        } else {
+          console.error(`${lineNum} | ${l}`);
+        }
+      });
+    }
+  } else {
+    console.error("❌ Failed to parse YAML:", err.message);
+  }
   process.exit(1);
 }
 
@@ -111,6 +131,38 @@ try {
 for (const key in yamlData) {
   yamlData[key] = yamlData[key] == null ? "" : String(yamlData[key]);
 }
+
+// --- Contract Number Logic ---
+// If ContractNumber exists and is not empty, use it. Otherwise, generate it.
+function getComNameInitials(name) {
+  if (!name || typeof name !== "string") return "";
+  let cleaned = name.replace(/[«»"']/g, "").trim();
+  return cleaned
+    .split(/\s+/)
+    .map(word => word[0] ? word[0].toUpperCase() : "")
+    .join("");
+}
+
+function generateContractNumberFromFormat(data) {
+  // Use ContractFormat or default
+  const format = data.ContractFormat || "{Prefix}-{CName}-{Day}{Month}{Year}";
+  const prefix = data.ContractPrefix || "";
+  const cname = getComNameInitials(data.ComName || "");
+  const day = data.Day ? String(data.Day).padStart(2, "0") : "";
+  const month = data.Month ? String(data.Month).padStart(2, "0") : "";
+  const year = data.Year || "";
+  // Replace tokens
+  return format
+    .replace("{Prefix}", prefix)
+    .replace("{CName}", cname)
+    .replace("{Day}", day)
+    .replace("{Month}", month)
+    .replace("{Year}", year);
+}
+
+let contractNumber = (yamlData.ContractNumber && String(yamlData.ContractNumber).trim() !== "")
+  ? String(yamlData.ContractNumber).trim()
+  : generateContractNumberFromFormat(yamlData);
 
 // --- Contract Placeholder Replacement Logic ---
 /*
@@ -126,22 +178,10 @@ for (const key in yamlData) {
     where Prefix = ContractPrefix, CName = ComName, Day, Month, Year
     (Pad Month and Day to 2 digits)
 */
+// For backward compatibility, also provide the contract number as {contract} placeholder
 function getContractPlaceholderValue(yamlData) {
-  // Fallbacks for missing values
-  const prefix = yamlData.ContractPrefix || "";
-  const cname = yamlData.ComName || "";
-  const day = yamlData.Day ? String(yamlData.Day).padStart(2, "0") : "";
-  const month = yamlData.Month ? String(yamlData.Month).padStart(2, "0") : "";
-  const year = yamlData.Year || "";
-  // Use ContractFormat if present, else default
-  let format = yamlData.ContractFormat || "{Prefix}-{CName}-{Day}{Month}{Year}";
-  // Replace tokens
-  return format
-    .replace("{Prefix}", prefix)
-    .replace("{CName}", cname)
-    .replace("{Day}", day)
-    .replace("{Month}", month)
-    .replace("{Year}", year);
+  // Use the contract number logic above
+  return contractNumber;
 }
 
 // Open Excel again to replace placeholders
@@ -182,7 +222,7 @@ for (const key of Object.keys(yamlData)) {
 }
 
 // Now, replace {contract}Placeholder with the formatted contract string
-const contractPlaceholder = "Contract}";
+const contractPlaceholder = "{Contract}";
 const contractValue = getContractPlaceholderValue(yamlData);
 
 let firstContractFound = sheetReplace.Cells.Find(contractPlaceholder);
