@@ -30,7 +30,7 @@ const yyyy = today.getFullYear();
 const mm = String(today.getMonth() + 1).padStart(2, "0");
 const dd = String(today.getDate()).padStart(2, "0");
 const baseFileName = `${yyyy}-${mm}-${dd}.xlsx`;
-let newFileName = baseFileName;
+let newFileName = `ActReco, ${parentFolderName}, ${baseFileName}`;
 let newFilePath = path.join(saveDir, newFileName);
 
 let version = 1;
@@ -221,7 +221,7 @@ for (const key of Object.keys(yamlData)) {
   }
 }
 
-// Now, replace {contract}Placeholder with the formatted contract string
+// Now, replace {Contract} placeholder with the formatted contract string
 const contractPlaceholder = "{Contract}";
 const contractValue = getContractPlaceholderValue(yamlData);
 
@@ -236,6 +236,34 @@ if (firstContractFound) {
     }
     found = sheetReplace.Cells.FindNext(found);
     if (!found || found.Address === firstContractFound.Address) break;
+  }
+}
+
+// Generate yyyy-mm-dd from Day, Month, Year and replace {Date} placeholder
+function getDatePlaceholderValue(data) {
+  const year = data.Year ? String(data.Year) : "";
+  const month = data.Month ? String(data.Month).padStart(2, "0") : "";
+  const day = data.Day ? String(data.Day).padStart(2, "0") : "";
+  if (year && month && day) {
+    return `${year}-${month}-${day}`;
+  }
+  return "";
+}
+
+const datePlaceholder = "{Date}";
+const dateValue = getDatePlaceholderValue(yamlData);
+
+let firstDateFound = sheetReplace.Cells.Find(datePlaceholder);
+if (firstDateFound) {
+  let found = firstDateFound;
+  while (found) {
+    try {
+      found.Value = dateValue;
+    } catch (err) {
+      console.warn(`⚠️ Failed to update ${found.Address}: ${err.message}`);
+    }
+    found = sheetReplace.Cells.FindNext(found);
+    if (!found || found.Address === firstDateFound.Address) break;
   }
 }
 
