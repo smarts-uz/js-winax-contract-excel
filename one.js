@@ -91,11 +91,11 @@ const Card_IN_Columns = { date: 15, amount: 16, path: 17 };
 const Card_OT_Columns = { date: 18, amount: 19, path: 20 };
 
 run(rootPath, newFilePath, sheetName, "Pricings", Pricings_Columns);
-// run(rootPath, newFilePath, sheetName, "Bank-OT", Bank_OT_Columns);
-// run(rootPath, newFilePath, sheetName, "Bank-IN", Bank_IN_Columns);
-// run(rootPath, newFilePath, sheetName, "EHF-IN", EHF_IN_Columns);
-// run(rootPath, newFilePath, sheetName, "Card-OT", Card_OT_Columns);
-// run(rootPath, newFilePath, sheetName, "Card-IN", Card_IN_Columns);
+run(rootPath, newFilePath, sheetName, "Bank-OT", Bank_OT_Columns);
+run(rootPath, newFilePath, sheetName, "Bank-IN", Bank_IN_Columns);
+run(rootPath, newFilePath, sheetName, "EHF-IN", EHF_IN_Columns);
+run(rootPath, newFilePath, sheetName, "Card-OT", Card_OT_Columns);
+run(rootPath, newFilePath, sheetName, "Card-IN", Card_IN_Columns);
 
 // === Placeholder Replacement ===
 let yamlData;
