@@ -1,20 +1,25 @@
+#!/usr/bin/env node
+
 import fs from "fs";
 import path from "path";
 import { execSync } from "child_process";
 
-// Path to the .actreco file
-const actrecoFile = "D:\\Projects\\Smart Software\\JS\\js-winax-contract-excel\\Company\\ALL.actreco";
+// === Get arguments ===
+// Usage: node run-all.js <actrecoFile> <sourceExcelFile>
+const [,, actrecoFile, sourceExcelPath] = process.argv;
 
-// Get the parent folder of the .actreco file
+if (!actrecoFile || !sourceExcelPath) {
+  console.error("❌ Usage: node run-all.js <actrecoFilePath> <sourceExcelFilePath>");
+  process.exit(1);
+}
+
+// Get parent folder of the .actreco file
 const rootDir = path.dirname(actrecoFile);
-
-// Specify the source Excel file path
-const sourceExcelPath = "D:\\Projects\\Smart Software\\JS\\js-winax-contract-excel\\Testings 25.xlsx";
 
 // Folders to ignore
 const ignoredFolders = ["@ Weak", "@ Bads", "ALL", "App"];
 
-// Recursively find all ALL.contract files in subfolders
+// === Recursively find all ALL.contract files ===
 function findAllContractFiles(dir) {
   let results = [];
   const entries = fs.readdirSync(dir, { withFileTypes: true });
@@ -23,7 +28,6 @@ function findAllContractFiles(dir) {
     const fullPath = path.join(dir, entry.name);
 
     if (entry.isDirectory()) {
-      // Skip ignored folders
       if (ignoredFolders.includes(entry.name)) {
         console.log(`⚠️ Ignoring folder: ${entry.name}`);
         continue;
@@ -45,6 +49,8 @@ if (contractFiles.length === 0) {
 }
 
 console.log(`Found ${contractFiles.length} ALL.contract files.`);
+
+// === Run processing script for each file ===
 for (const contractFile of contractFiles) {
   try {
     const cmd = `node one.js "${contractFile}" "${sourceExcelPath}"`;

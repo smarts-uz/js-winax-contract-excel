@@ -6,3 +6,9 @@ node upd_com_info.js "D:\Projects\Smart Software\JS\js-winax-contract-excel\ALL.
 
 
 node one.js "d:\Projects\Smart Software\JS\js-winax-contract-excel\Company\CONSTANTA PROF COMMERCE\ALL.contract" "D:\Projects\Smart Software\JS\js-winax-contract-excel\Testings 25.xlsx"
+
+
+node all.js "D:\Projects\Smart Software\JS\js-winax-contract-excel\Company\ALL.actreco" "D:\Projects\Smart Software\JS\js-winax-contract-excel\Testings 25.xlsx"
+
+
+node all-spawn.js "D:\Projects\Smart Software\JS\js-winax-contract-excel\Company\ALL.actreco" "D:\Projects\Smart Software\JS\js-winax-contract-excel\Testings 25.xlsx"
