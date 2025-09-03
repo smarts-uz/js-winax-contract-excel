@@ -12,3 +12,6 @@ node all.js "z:\FileType\Testings\ALL.actreco" "D:\Projects\Smart Software\JS\js
 
 
 node all-spawn.js "D:\Projects\Smart Software\JS\js-winax-contract-excel\Company\ALL.actreco" "D:\Projects\Smart Software\JS\js-winax-contract-excel\Testings 25.xlsx"
+
+
+node act.js "D:\Projects\Smart Software\JS\js-winax-contract-excel\Company\ALL.actreco" "D:\Projects\Smart Software\JS\js-winax-contract-excel\ALL 17.xlsx"
