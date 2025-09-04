@@ -3,6 +3,7 @@ import path from "path";
 import winax from "winax";
 import { run } from "./utils.js";
 import yaml from "js-yaml";
+import { exec } from 'child_process';
 
 // === GET ARGUMENTS FROM CLI ===
 
@@ -11,12 +12,17 @@ if (process.argv.length < 4) {
   process.exit(1);
 }
 
+let isOpen = process.argv[4] || 'false';
+
 const contractFilePath = path.resolve(process.argv[2]);
 const yamlFilePath = contractFilePath; // contractFilePath and yamlFilePath are the same
+
+console.log('contractFilePath', contractFilePath);
+
 const sourceExcelPath = path.resolve(
-  process.argv[3] || "d:\\Projects\\Smart Software\\JS\\js-winax-contract-excel\\New_Copy.xlsx"
+  process.argv[3] || "d:\\Develop\\Manager\\App\\Company\\ActReco\\Projects\\v2\\Testings 42.xlsx"
 );
-let isOpen = process.argv[4] || 'false';
+
 
 // === Extract parent folder name ===
 const parentFolderName = path.basename(path.dirname(contractFilePath));
@@ -248,16 +254,15 @@ excelReplace.Quit();
 console.log(`✅ Placeholders replaced in sheet "${sheetName}" of ${newFilePath}`);
 
 
-if (isOpen === 'true' || isOpen === '1') {
+if (isOpen == 'true' || isOpen == '1') {
   if (process.platform === 'win32') {
-      exec(`start "" "${outputDocxPath}"`);
+    exec(`start "" "${newFilePath}"`);
   } else if (process.platform === 'darwin') {
-      exec(`open "${outputDocxPath}"`);
+    exec(`open "${newFilePath}"`);
   } else {
       console.warn('Platformani qo\'llab-quvvatlanmaydi:', process.platform);
   }
 }
-
 
 
 setTimeout(() => {
