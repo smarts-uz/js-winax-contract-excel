@@ -60,3 +60,9 @@ for (const contractFile of contractFiles) {
     console.error(`❌ Error processing ${contractFile}:`, err.message);
   }
 }
+
+
+setTimeout(() => {
+  console.log('Exiting...');
+  process.exit(0);
+}, 2000);

@@ -23,17 +23,17 @@ export function getSheet(workbook, sheetName) {
 // === SCAN SUBFOLDERS OR TXT FILES ===
 export function scanSubfolders(rootFolder, folderPrefix) {
   const folderPath = path.join(rootFolder, folderPrefix);
+
   if (!fs.existsSync(folderPath) || !fs.statSync(folderPath).isDirectory()) {
-    console.warn(`Folder "${folderPrefix}" not found`);
-    return [];
+    return []; // return empty silently
   }
-  // If folderPrefix is "Pricings", return .txt files instead of subfolders
+
   if (folderPrefix === "Pricings") {
     return fs.readdirSync(folderPath)
       .filter(f => f.endsWith('.txt'))
       .map(f => path.join(folderPath, f));
   }
-  // Otherwise, return subfolders
+
   return fs.readdirSync(folderPath)
     .map(f => path.join(folderPath, f))
     .filter(f => fs.statSync(f).isDirectory());
@@ -161,6 +161,13 @@ export function run(rootPath, excelFile, sheetName, folderPrefix, columnMap, sta
 
     // Scan subfolders or txt files
     const items = scanSubfolders(rootPath, folderPrefix);
+
+    if (items.length === 0) {
+      console.warn(`⚠️ Folder or files not found for "${folderPrefix}"`);
+      workbook.Close(false);
+      excel.Quit();
+      return; // exit early, no "completed successfully" message
+    }
 
     // Only pass prepaymonth to processFolders if folderPrefix is "Pricings"
     if (folderPrefix === "Pricings") {

@@ -182,3 +182,9 @@ try {
   try { excel.Quit(); } catch {}
   process.exit(1);
 }
+
+
+setTimeout(() => {
+  console.log('Exiting...');
+  process.exit(0);
+}, 2000);
