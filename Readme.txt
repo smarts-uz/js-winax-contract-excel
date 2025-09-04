@@ -13,6 +13,11 @@ node "d:\FileType\Office\Develop\XLS\Excel.Application\JS winax\js-winax-contrac
 node "d:\FileType\Office\Develop\XLS\Excel.Application\JS winax\js-winax-contract-excel\one.js" "d:\FSystem\ALL\Humans\Rentalls\Testings\KOGON YO`L TA`MIR QURILISH\ALL.contract" "d:\Develop\Manager\App\Company\ActReco\App\v2\Testings 38.xlsx"
 
 
+node "d:\FileType\Office\Develop\XLS\Excel.Application\JS winax\Sources\js-winax-contract-excel\one.js" "d:\FSystem\ALL\Humans\Rentalls\Testings\KOGON YO`L TA`MIR QURILISH\ALL.contract" "d:\Develop\Manager\App\Company\ActReco\Projects\v2\Testings 41.xlsx"
+
+node "d:\FileType\Office\Develop\XLS\Excel.Application\JS winax\Sources\js-winax-contract-excel\one.js" "d:\FSystem\ALL\Humans\Rentalls\Testings\KOGON YO`L TA`MIR QURILISH\ALL.contract" "d:\Develop\Manager\App\Company\ActReco\Projects\v2\Testings 42.xlsx"
+
+
 node all.js "z:\FileType\Testings\ALL.actreco" "D:\Projects\Smart Software\JS\js-winax-contract-excel\Testings 25.xlsx"
 
 
