@@ -24,7 +24,6 @@ console.log(`Parent folder name: ${parentFolderName}`);
 const saveDir = path.join(path.dirname(contractFilePath), "ActReco");
 if (!fs.existsSync(saveDir)) fs.mkdirSync(saveDir, { recursive: true });
 
-
 // === Generate new file name (overwrite if exists) ===
 const today = new Date();
 const yyyy = today.getFullYear();
@@ -34,50 +33,18 @@ const dd = String(today.getDate()).padStart(2, "0");
 const newFileName = `ActReco, ${parentFolderName}, ${yyyy}-${mm}-${dd}.xlsx`;
 const newFilePath = path.join(saveDir, newFileName);
 
-// === Start Excel for duplication ===
-const excel = new winax.Object("Excel.Application");
-excel.DisplayAlerts = false; // Disable Excel alerts (overwrite prompts)
-excel.Visible = false;
-
-
-console.log(`Opening source Excel: ${sourceExcelPath}`);
-const sourceWorkbook = excel.Workbooks.Open(sourceExcelPath);
-
-// === Create new workbook and copy App sheet ===
-const newWorkbook = excel.Workbooks.Add();
-
-let templateSheet;
-try {
-  templateSheet = sourceWorkbook.Sheets("App");
-} catch {
-  console.error("❌ 'App' sheet not found in source workbook.");
-  process.exit(1);
-}
-
-templateSheet.Copy(null, newWorkbook.Sheets(newWorkbook.Sheets.Count));
-
-// Delete default sheets
-while (newWorkbook.Sheets.Count > 1) {
-  try { newWorkbook.Sheets(1).Delete(); } catch {}
-}
-
-// Rename copied sheet and write folder name in B2
-const activeSheet = newWorkbook.Sheets(1);
-activeSheet.Name = parentFolderName;
-activeSheet.Cells(2, 2).Value = `Data for ${parentFolderName}`;
-
-// Save new workbook
-console.log(`Saving new Excel: ${newFilePath}`);
-newWorkbook.SaveAs(newFilePath);
-
-// Close source and new workbook
-newWorkbook.Close(false);
-sourceWorkbook.Close(false);
-excel.Quit();
+// === Copy whole Excel file instead of sheet ===
+console.log(`Copying whole Excel file to: ${newFilePath}`);
+fs.copyFileSync(sourceExcelPath, newFilePath);
 
 // === Run utils.js for processing ===
 const rootPath = path.dirname(contractFilePath);
-const sheetName = parentFolderName;
+const sheetName = 'App';
+// you can still call run() if needed
+// run(newFilePath, sheetName, rootPath);
+
+console.log("✅ File duplicated successfully.");
+
 
 const Pricings_Columns = { date: 3, amount: 4 };
 const Bank_OT_Columns = { date: 6, amount: 7, path: 8 };
