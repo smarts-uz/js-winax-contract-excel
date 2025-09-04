@@ -40,12 +40,11 @@ export function scanSubfolders(rootFolder, folderPrefix) {
 }
 
 // === PROCESS FOLDERS AND WRITE DATA ===
-export function processFolders(sheet, items, startRow, columnMap, folderPrefix = "") {
+export function processFolders(sheet, items, startRow, columnMap, folderPrefix = "", prepaymonth) {
   let row = startRow;
 
   // If folderPrefix is "Pricings", process .txt files
   if (folderPrefix === "Pricings") {
-    // Separate ALL files and date files
     const allFiles = [];
     const dateFiles = [];
 
@@ -58,7 +57,12 @@ export function processFolders(sheet, items, startRow, columnMap, folderPrefix =
       }
     });
 
-    // First process date files
+    // Sort dateFiles
+    dateFiles.sort((a, b) =>
+      path.basename(a).localeCompare(path.basename(b), undefined, { numeric: true, sensitivity: "base" })
+    );
+
+    // Process date files
     dateFiles.forEach(filePath => {
       const fileName = path.basename(filePath);
       const match = fileName.match(/^(\d{4}-\d{2}-\d{2})\s+([\d,]+)\.txt$/);
@@ -67,68 +71,44 @@ export function processFolders(sheet, items, startRow, columnMap, folderPrefix =
       const date = match[1];
       const amount = match[2];
 
-      // Write date and amount
-      if (columnMap.date !== undefined) {
-        sheet.Cells(row, columnMap.date).Value = date;
-      }
-      if (columnMap.amount !== undefined) {
-        sheet.Cells(row, columnMap.amount).Value = amount;
-      }
-      if (columnMap.path !== undefined) {
-        sheet.Cells(row, columnMap.path).Value = filePath;
-      }
+      if (columnMap.date !== undefined) sheet.Cells(row, columnMap.date).Value = date;
+      if (columnMap.amount !== undefined) sheet.Cells(row, columnMap.amount).Value = amount;
+      if (columnMap.path !== undefined) sheet.Cells(row, columnMap.path).Value = filePath;
       row++;
     });
 
-    // Then process ALL files last
+    // Sort ALL files
+    allFiles.sort((a, b) =>
+      path.basename(a).localeCompare(path.basename(b), undefined, { numeric: true, sensitivity: "base" })
+    );
+
+    // Process ALL files
     allFiles.forEach(filePath => {
       const fileName = path.basename(filePath);
       const allMatch = fileName.match(/^ALL\s+([\d,]+)\.txt$/);
       if (allMatch) {
-        // Get amount
         const amount = allMatch[1];
 
-        // Write to date: next month first day
+        // Start from next month
         const now = new Date();
         let year = now.getFullYear();
-        let month = now.getMonth() + 1; // JS months 0-based, so +1 for next month
-        if (month === 12) {
-          year += 1;
-          month = 1;
-        } else {
-          month += 1;
-        }
-        const dateStr = `${year}-${String(month).padStart(2, '0')}-01`;
+        let month = now.getMonth() + 2; // next month (JS months 0-based +1, then +1 more)
 
-        if (columnMap.date !== undefined) {
-          sheet.Cells(row, columnMap.date).Value = dateStr;
-        }
-        if (columnMap.amount !== undefined) {
-          sheet.Cells(row, columnMap.amount).Value = amount;
-        }
-        if (columnMap.path !== undefined) {
-          sheet.Cells(row, columnMap.path).Value = filePath;
-        }
-        row++;
+        // Add prepaymonth - 1 more months
+        month += prepaymonth - 1;
 
-        // Now, add another +1 month row
-        let nextYear = year;
-        let nextMonth = month + 1;
-        if (nextMonth > 12) {
-          nextYear += 1;
-          nextMonth = 1;
+        // Fix overflow
+        while (month > 12) {
+          month -= 12;
+          year++;
         }
-        const dateStr2 = `${nextYear}-${String(nextMonth).padStart(2, '0')}-01`;
 
-        if (columnMap.date !== undefined) {
-          sheet.Cells(row, columnMap.date).Value = dateStr2;
-        }
-        if (columnMap.amount !== undefined) {
-          sheet.Cells(row, columnMap.amount).Value = amount;
-        }
-        if (columnMap.path !== undefined) {
-          sheet.Cells(row, columnMap.path).Value = filePath;
-        }
+        const dateStr = `${year}-${String(month).padStart(2, "0")}-01`;
+        console.log(dateStr);
+
+        if (columnMap.date !== undefined) sheet.Cells(row, columnMap.date).Value = dateStr;
+        if (columnMap.amount !== undefined) sheet.Cells(row, columnMap.amount).Value = amount;
+        if (columnMap.path !== undefined) sheet.Cells(row, columnMap.path).Value = filePath;
         row++;
       }
     });
@@ -136,8 +116,12 @@ export function processFolders(sheet, items, startRow, columnMap, folderPrefix =
     return;
   }
 
-  // Otherwise, process as folders
-  items.forEach(folder => {
+  // Otherwise, process as folders (prepaymonth is not used here)
+  const sortedItems = [...items].sort((a, b) =>
+    path.basename(a).localeCompare(path.basename(b), undefined, { numeric: true, sensitivity: "base" })
+  );
+
+  sortedItems.forEach(folder => {
     const folderName = path.basename(folder);
     const match = folderName.match(/^(\d{4}-\d{2}-\d{2})\s+([\d,]+)/);
     if (!match) return;
@@ -145,17 +129,11 @@ export function processFolders(sheet, items, startRow, columnMap, folderPrefix =
     const date = match[1];
     const amount = match[2];
 
-    // Write date and amount
-    if (columnMap.date !== undefined) {
-      sheet.Cells(row, columnMap.date).Value = date;
-    }
-    if (columnMap.amount !== undefined) {
-      sheet.Cells(row, columnMap.amount).Value = amount;
-    }
+    if (columnMap.date !== undefined) sheet.Cells(row, columnMap.date).Value = date;
+    if (columnMap.amount !== undefined) sheet.Cells(row, columnMap.amount).Value = amount;
 
-    // Write #Cost only if columnMap.cost exists
     if (columnMap.cost !== undefined) {
-      const costFile = fs.readdirSync(folder).find(file => file.startsWith('#Cost') && file.endsWith('.txt'));
+      const costFile = fs.readdirSync(folder).find(file => file.startsWith("#Cost") && file.endsWith(".txt"));
       if (costFile) {
         const costMatch = costFile.match(/^#Cost\s+([\d,]+)/);
         if (costMatch) {
@@ -164,13 +142,11 @@ export function processFolders(sheet, items, startRow, columnMap, folderPrefix =
       }
     }
 
-    // Full folder path
-    if (columnMap.path !== undefined) {
-      sheet.Cells(row, columnMap.path).Value = folder;
-    }
+    if (columnMap.path !== undefined) sheet.Cells(row, columnMap.path).Value = folder;
     row++;
   });
 }
+
 
 // === CALCULATE WORKBOOK / APPLICATION ===
 export function calculateWorkbook(excel) {
@@ -178,7 +154,7 @@ export function calculateWorkbook(excel) {
 }
 
 // === MAIN FUNCTION ===
-export function run(rootPath, excelFile, sheetName, folderPrefix, columnMap, startRow1) {
+export function run(rootPath, excelFile, sheetName, folderPrefix, columnMap, startRow1, prepaymonth) {
   const { excel, workbook } = openExcel(excelFile);
   try {
     const sheet = getSheet(workbook, sheetName);
@@ -186,8 +162,12 @@ export function run(rootPath, excelFile, sheetName, folderPrefix, columnMap, sta
     // Scan subfolders or txt files
     const items = scanSubfolders(rootPath, folderPrefix);
 
-    // Process and write
-    processFolders(sheet, items, startRow1, columnMap, folderPrefix);
+    // Only pass prepaymonth to processFolders if folderPrefix is "Pricings"
+    if (folderPrefix === "Pricings") {
+      processFolders(sheet, items, startRow1, columnMap, folderPrefix, prepaymonth);
+    } else {
+      processFolders(sheet, items, startRow1, columnMap, folderPrefix);
+    }
 
     // Calculate formulas
     calculateWorkbook(excel);

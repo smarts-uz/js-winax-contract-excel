@@ -1,13 +1,15 @@
-
-Day: 22
+Year: 2025
 Month: 4
-Year: 2024
+Day: 22
 
 Area: 18
 
-ContractNumber: Dilbek
+ContractNumber: 
 ContractPrefix: RC
-ContractFormat: {{Prefix}}-{{CName}}-{{Day}}{{Month}}{{Year}}
+ContractFormat: "{Prefix}-{CName}-{Year}-{Month}-{Day}"
+
+PrepayMonth: 5
+
 TelegramGroupID: -1002893551657
 TelegramTopicID: 130
 

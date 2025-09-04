@@ -87,13 +87,7 @@ const Card_OT_Columns = { date: 15, amount: 16, path: 17 };
 const Card_IN_Columns = { date: 18, amount: 19, path: 20 };
 const Bonuses_Columns = { date: 21, amount: 22, path: 23 };
 
-run(rootPath, newFilePath, sheetName, "Pricings", Pricings_Columns,5);
-run(rootPath, newFilePath, sheetName, "Bank-OT", Bank_OT_Columns,4);
-run(rootPath, newFilePath, sheetName, "Bank-IN", Bank_IN_Columns,4);
-run(rootPath, newFilePath, sheetName, "EHF-IN", EHF_IN_Columns,4);
-run(rootPath, newFilePath, sheetName, "Card-OT", Card_OT_Columns,4);
-run(rootPath, newFilePath, sheetName, "Card-IN", Card_IN_Columns,4);
-run(rootPath, newFilePath, sheetName, "Bonuses", Bonuses_Columns,4);
+
 
 // === Placeholder Replacement ===
 let yamlData;
@@ -124,6 +118,14 @@ try {
   }
   process.exit(1);
 }
+
+run(rootPath, newFilePath, sheetName, "Pricings", Pricings_Columns, 5, yamlData.PrepayMonth ? yamlData.PrepayMonth : 1);
+run(rootPath, newFilePath, sheetName, "Bank-OT", Bank_OT_Columns,4);
+run(rootPath, newFilePath, sheetName, "Bank-IN", Bank_IN_Columns,4);
+run(rootPath, newFilePath, sheetName, "EHF-IN", EHF_IN_Columns,4);
+run(rootPath, newFilePath, sheetName, "Card-OT", Card_OT_Columns,4);
+run(rootPath, newFilePath, sheetName, "Card-IN", Card_IN_Columns,4);
+
 
 // Ensure all values are strings
 for (const key in yamlData) {
