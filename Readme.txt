@@ -34,3 +34,7 @@ node "d:\FileType\Office\Develop\XLS\Excel.Application\JS winax\Sources\js-winax
 
 node "d:\FileType\Office\Develop\XLS\Excel.Application\JS winax\Sources\js-winax-contract-excel\one.js" "d:\FSystem\ALL\Humans\Rentalls\Testings\KOGON YO`L TA`MIR QURILISH\CN SRental 18.contract" "d:\Develop\Manager\App\Company\ActReco\Projects\v2\Testings 42.xlsx" true
 
+node all.js "z:\FileType\Testings\ALL.contractall" "C:\Users\Администратор\Desktop\js-winax-contract-excel\Testings 32.xlsx"
+
+
+node act.js "z:\FileType\Testings\ALL.contractall" "C:\Users\Администратор\Desktop\js-winax-contract-excel\ALL 22.xlsm"
