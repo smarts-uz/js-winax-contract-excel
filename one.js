@@ -5,8 +5,9 @@ import { run } from "./utils.js";
 import yaml from "js-yaml";
 
 // === GET ARGUMENTS FROM CLI ===
-if (process.argv.length < 3) {
-  console.error("❌ Usage: node duplicate_app_by_contract.js <contractFilePath> [sourceExcelFile]");
+
+if (process.argv.length < 4) {
+  console.error('Usage: node one.js <data.yml> <template.xlsx> [isOpen=false]');
   process.exit(1);
 }
 
@@ -15,6 +16,7 @@ const yamlFilePath = contractFilePath; // contractFilePath and yamlFilePath are 
 const sourceExcelPath = path.resolve(
   process.argv[3] || "d:\\Projects\\Smart Software\\JS\\js-winax-contract-excel\\New_Copy.xlsx"
 );
+let isOpen = process.argv[4] || 'false';
 
 // === Extract parent folder name ===
 const parentFolderName = path.basename(path.dirname(contractFilePath));
@@ -244,3 +246,21 @@ workbookReplace.Close();
 excelReplace.Quit();
 
 console.log(`✅ Placeholders replaced in sheet "${sheetName}" of ${newFilePath}`);
+
+
+if (isOpen === 'true' || isOpen === '1') {
+  if (process.platform === 'win32') {
+      exec(`start "" "${outputDocxPath}"`);
+  } else if (process.platform === 'darwin') {
+      exec(`open "${outputDocxPath}"`);
+  } else {
+      console.warn('Platformani qo\'llab-quvvatlanmaydi:', process.platform);
+  }
+}
+
+
+
+setTimeout(() => {
+  console.log('Exiting...');
+  process.exit(0);
+}, 2000);
