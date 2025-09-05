@@ -40,11 +40,33 @@ export function scanSubfolders(rootFolder, folderPrefix) {
 }
 
 // === PROCESS FOLDERS AND WRITE DATA ===
-export function processFolders(sheet, items, startRow, columnMap, folderPrefix = "", prepaymonth) {
+export function processFolders(sheet, items, startRow, columnMap, folderPrefix = "", prepaymonth, defaultprice) {
   let row = startRow;
 
-  // If folderPrefix is "Pricings", process .txt files
+  // === HANDLE "Pricings" CASE ===
   if (folderPrefix === "Pricings") {
+    if (items.length === 0) {
+      // Use default price if no pricing files found
+      // console.warn("⚠️ Pricings folder empty — inserting default price");
+
+      const now = new Date();
+      let year = now.getFullYear();
+      let month = now.getMonth() + 2; // next month (0-based +1, then +1 more)
+
+      for (let i = 0; i < prepaymonth; i++) {
+        const calcYear = year + Math.floor((month - 1) / 12);
+        const calcMonth = ((month - 1) % 12) + 1;
+        const dateStr = `${calcYear}-${String(calcMonth).padStart(2, "0")}-01`;
+
+        if (columnMap.date !== undefined) sheet.Cells(row, columnMap.date).Value = dateStr;
+        if (columnMap.amount !== undefined) sheet.Cells(row, columnMap.amount).Value = defaultprice;
+        if (columnMap.path !== undefined) sheet.Cells(row, columnMap.path).Value = "[DEFAULT PRICE]";
+        row++;
+        month++;
+      }
+      return;
+    }
+
     const allFiles = [];
     const dateFiles = [];
 
@@ -92,31 +114,27 @@ export function processFolders(sheet, items, startRow, columnMap, folderPrefix =
         // Start from next month
         const now = new Date();
         let year = now.getFullYear();
-        let month = now.getMonth() + 2; // next month (JS months 0-based +1, then +1 more)
+        let month = now.getMonth() + 2; // next month
 
-        // Add prepaymonth - 1 more months
-        month += prepaymonth - 1;
+        // Generate prepaymonth months
+        for (let i = 0; i < prepaymonth; i++) {
+          const calcYear = year + Math.floor((month - 1) / 12);
+          const calcMonth = ((month - 1) % 12) + 1;
+          const dateStr = `${calcYear}-${String(calcMonth).padStart(2, "0")}-01`;
 
-        // Fix overflow
-        while (month > 12) {
-          month -= 12;
-          year++;
+          if (columnMap.date !== undefined) sheet.Cells(row, columnMap.date).Value = dateStr;
+          if (columnMap.amount !== undefined) sheet.Cells(row, columnMap.amount).Value = amount;
+          if (columnMap.path !== undefined) sheet.Cells(row, columnMap.path).Value = filePath;
+          row++;
+          month++;
         }
-
-        const dateStr = `${year}-${String(month).padStart(2, "0")}-01`;
-        console.log(dateStr);
-
-        if (columnMap.date !== undefined) sheet.Cells(row, columnMap.date).Value = dateStr;
-        if (columnMap.amount !== undefined) sheet.Cells(row, columnMap.amount).Value = amount;
-        if (columnMap.path !== undefined) sheet.Cells(row, columnMap.path).Value = filePath;
-        row++;
       }
     });
 
     return;
   }
 
-  // Otherwise, process as folders (prepaymonth is not used here)
+  // === HANDLE OTHER FOLDERS ===
   const sortedItems = [...items].sort((a, b) =>
     path.basename(a).localeCompare(path.basename(b), undefined, { numeric: true, sensitivity: "base" })
   );
@@ -147,14 +165,13 @@ export function processFolders(sheet, items, startRow, columnMap, folderPrefix =
   });
 }
 
-
 // === CALCULATE WORKBOOK / APPLICATION ===
 export function calculateWorkbook(excel) {
   excel.CalculateFull(); // calculates all formulas in the workbook
 }
 
 // === MAIN FUNCTION ===
-export function run(rootPath, excelFile, sheetName, folderPrefix, columnMap, startRow1, prepaymonth) {
+export function run(rootPath, excelFile, sheetName, folderPrefix, columnMap, startRow1, prepaymonth, defaultprice1) {
   const { excel, workbook } = openExcel(excelFile);
   try {
     const sheet = getSheet(workbook, sheetName);
@@ -163,17 +180,21 @@ export function run(rootPath, excelFile, sheetName, folderPrefix, columnMap, sta
     const items = scanSubfolders(rootPath, folderPrefix);
 
     if (items.length === 0) {
-      console.warn(`⚠️ Folder or files not found for "${folderPrefix}"`);
-      workbook.Close(false);
-      excel.Quit();
-      return; // exit early, no "completed successfully" message
-    }
-
-    // Only pass prepaymonth to processFolders if folderPrefix is "Pricings"
-    if (folderPrefix === "Pricings") {
-      processFolders(sheet, items, startRow1, columnMap, folderPrefix, prepaymonth);
+      if (folderPrefix === "Pricings") {
+        console.warn(`⚠️ Pricings folder not found — using default price`);
+        processFolders(sheet, [], startRow1, columnMap, folderPrefix, prepaymonth, defaultprice1);
+      } else {
+        console.warn(`⚠️ Folder or files not found for "${folderPrefix}"`);
+        workbook.Close(false);
+        excel.Quit();
+        return;
+      }
     } else {
-      processFolders(sheet, items, startRow1, columnMap, folderPrefix);
+      if (folderPrefix === "Pricings") {
+        processFolders(sheet, items, startRow1, columnMap, folderPrefix, prepaymonth, defaultprice1);
+      } else {
+        processFolders(sheet, items, startRow1, columnMap, folderPrefix, defaultprice1);
+      }
     }
 
     // Calculate formulas

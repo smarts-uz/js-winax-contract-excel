@@ -94,7 +94,7 @@ try {
   process.exit(1);
 }
 
-run(rootPath, newFilePath, sheetName, "Pricings", Pricings_Columns, 5, yamlData.PrepayMonth ? yamlData.PrepayMonth : 1);
+run(rootPath, newFilePath, sheetName, "Pricings", Pricings_Columns, 5, yamlData.PrepayMonth ? yamlData.PrepayMonth : 1,yamlData.Price1);
 run(rootPath, newFilePath, sheetName, "Bank-OT", Bank_OT_Columns,4);
 run(rootPath, newFilePath, sheetName, "Bank-IN", Bank_IN_Columns,4);
 run(rootPath, newFilePath, sheetName, "EHF-IN", EHF_IN_Columns,4);
