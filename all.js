@@ -47,13 +47,22 @@ if (contractFiles.length === 0) {
   console.log("No ALL.contract files found.");
   process.exit(0);
 }
-
 console.log(`Found ${contractFiles.length} ALL.contract files.`);
+console.log(`contractFiles: ${contractFiles}`);
+
+// get parent path for current file
+const currentFilePath = process.argv[1];
+const currentDir = path.dirname(currentFilePath);
+
+// append one.js to current path
+const oneJsPath = path.join(currentDir, "one.js");
+console.log(`oneJsPath: ${oneJsPath}`);
+
 
 // === Run processing script for each file ===
 for (const contractFile of contractFiles) {
   try {
-    const cmd = `node one.js "${contractFile}" "${sourceExcelPath}"`;
+    const cmd = `node "${oneJsPath}" "${contractFile}" "${sourceExcelPath}"`;
     console.log(`\n=== Running: ${cmd}`);
     execSync(cmd, { stdio: "inherit" });
   } catch (err) {
