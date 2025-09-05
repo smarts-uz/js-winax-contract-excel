@@ -100,7 +100,7 @@ run(
   "Pricings",
   Pricings_Columns,
   5,
-  yamlData.PrepayMonth || process.env.PREPAYMONTH || 1,
+  yamlData.PrepayMonth || process.env.PrepayMonth || 1,
   yamlData.Price1
 );
 run(rootPath, newFilePath, sheetName, "Bank-OT", Bank_OT_Columns, 4);
@@ -134,9 +134,9 @@ function getComNameInitials(name) {
 function generateContractNumberFromFormat(data) {
   const format =
     data.ContractFormat ||
-    process.env.CONTRACTFORMAT ||
+    process.env.ContractFormat ||
     "{Prefix}-{CName}-{Day}{Month}{Year}";
-  const prefix = data.ContractPrefix || process.env.CONTRACTPREFIX || "";
+  const prefix = data.ContractPrefix || process.env.ContractPrefix || "RCC";
   const cname = getComNameInitials(data.ComName || "");
   const day = data.Day ? String(data.Day).padStart(2, "0") : "";
   const month = data.Month ? String(data.Month).padStart(2, "0") : "";
@@ -153,7 +153,7 @@ function generateContractNumberFromFormat(data) {
 let contractNumber =
   yamlData.ContractNumber && String(yamlData.ContractNumber).trim() !== ""
     ? String(yamlData.ContractNumber).trim()
-    : process.env.CONTRACTNUMBER || generateContractNumberFromFormat(yamlData);
+    : process.env.ContractNumber || generateContractNumberFromFormat(yamlData);
 
 // --- Placeholder replacement helper functions ---
 function getContractPlaceholderValue() {
