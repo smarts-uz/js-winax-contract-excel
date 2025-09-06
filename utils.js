@@ -2,6 +2,8 @@
 import fs from 'fs';
 import path from 'path';
 import winax from 'winax';
+import { execSync } from "child_process";
+
 
 // === START EXCEL ===
 export function openExcel(filePath) {
@@ -207,5 +209,36 @@ export function run(rootPath, excelFile, sheetName, folderPrefix, columnMap, sta
   } catch (err) {
     console.error('❌ Error:', err);
     excel.Quit();
+  }
+}
+
+export function openFileDialog(initialDir = "D:\\Projects") {
+  const psScript = `
+Add-Type -AssemblyName System.Windows.Forms
+$dlg = New-Object System.Windows.Forms.OpenFileDialog
+$dlg.InitialDirectory = '${initialDir}'
+$dlg.Filter = 'Excel Files (*.xlsx)|*.xlsx|All Files (*.*)|*.*'
+if ($dlg.ShowDialog() -eq [System.Windows.Forms.DialogResult]::OK) {
+    Write-Output $dlg.FileName
+}
+`;
+
+  try {
+    // Inline PowerShell script with -NoProfile to avoid user profile issues
+    const filePath = execSync(
+      `powershell -NoProfile -Command "${psScript.replace(/\n/g, ';')}"`,
+      { encoding: "utf8" }
+    ).trim();
+
+    if (filePath) {
+      console.log("Selected file:", filePath);
+      return filePath;
+    } else {
+      console.log("No file selected.");
+      return null;
+    }
+  } catch (err) {
+    console.error("Error opening dialog:", err.message);
+    return null;
   }
 }

@@ -1,7 +1,7 @@
 import fs from "fs";
 import path from "path";
 import winax from "winax";
-import { run } from "./utils.js";
+import { run, openFileDialog } from "./utils.js";
 import yaml from "js-yaml";
 import { exec } from "child_process";
 import dotenv from "dotenv";
@@ -12,11 +12,11 @@ function messageBox(msg, title = "Message", type = 64) {
   return shell.Popup(msg, 0, title, type);
 }
 
-// get parent path for current file
+// Get parent path for current file
 const currentFilePath = process.argv[1];
 const currentDir = path.dirname(currentFilePath);
 
-// append .env to current path
+// Append .env to current path
 const envpath = path.join(currentDir, ".env");
 
 // === Load environment variables ===
@@ -37,12 +37,35 @@ let isOpen = process.argv[4] || "false";
 const contractFilePath = path.resolve(process.argv[2]);
 const yamlFilePath = contractFilePath; // contractFilePath and yamlFilePath are the same
 
-console.log("contractFilePath", contractFilePath);
+// If sourceexcelpath empty string give value in openfiledialog
+let sourceExcelPath = path.resolve(process.argv[3]);
 
-const sourceExcelPath = path.resolve(
-  process.argv[3] ||
-    "d:\\Develop\\Manager\\App\\Company\\ActReco\\Projects\\v2\\Testings 42.xlsx"
-);
+if (process.argv[3] === "") {
+  // Get computer name from environment or execute whoami command
+  let computerName = process.env.COMPUTERNAME || process.env.HOSTNAME;
+
+  if (!computerName) {
+    try {
+      const { execSync } = require("child_process");
+      if (process.platform === "win32") {
+        computerName = execSync("echo %COMPUTERNAME%", { encoding: "utf8" }).trim();
+      } else {
+        computerName = execSync("hostname", { encoding: "utf8" }).trim();
+      }
+    } catch (err) {
+      console.warn("Failed to get computer name:", err.message);
+      computerName = "Unknown";
+    }
+  }
+
+  let sourceExcelPathenv;
+  if (computerName === "WorkPC") {
+    sourceExcelPathenv = path.resolve(process.env.TemplateDirectoryWorkPC);
+  } else {
+    sourceExcelPathenv = path.resolve(process.env.TemplateDirectory);
+  }
+  sourceExcelPath = openFileDialog(sourceExcelPathenv);
+}
 
 // === Extract parent folder name ===
 const parentFolderName = path.basename(path.dirname(contractFilePath));
