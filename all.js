@@ -8,10 +8,21 @@ import { execSync } from "child_process";
 // Usage: node run-all.js <actrecoFile> <sourceExcelFile>
 const [,, actrecoFile, sourceExcelPath] = process.argv;
 
-if (!actrecoFile || !sourceExcelPath) {
-  console.error("❌ Usage: node run-all.js <actrecoFilePath> <sourceExcelFilePath>");
+// === MessageBox Helper (native Windows via WinAX) ===
+function messageBox(msg, title = "Message", type = 64) {
+  const shell = new winax.Object("WScript.Shell");
+  return shell.Popup(msg, 0, title, type);
+}
+
+if (process.argv.length < 4) {
+  messageBox(
+    "Usage: node one.js <data.yml> <template.xlsx> [isOpen=false]",
+    "Missing Arguments",
+    16 // error icon
+  );
   process.exit(1);
 }
+
 
 // Get parent folder of the .actreco file
 const rootDir = path.dirname(actrecoFile);
