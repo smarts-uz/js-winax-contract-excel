@@ -116,7 +116,7 @@ const newFilePath = path.join(saveDir, newFileName);
 
 // === Excel COM automation ===
 const excel = new winax.Object("Excel.Application");
-excel.DisplayAlerts = false;
+excel.DisplayAlerts = true;
 excel.Visible = false;
 
 try {
