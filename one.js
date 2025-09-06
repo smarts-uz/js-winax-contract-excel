@@ -6,6 +6,11 @@ import yaml from "js-yaml";
 import { exec } from "child_process";
 import dotenv from "dotenv";
 
+// === MessageBox Helper (native Windows via WinAX) ===
+function messageBox(msg, title = "Message", type = 64) {
+  const shell = new winax.Object("WScript.Shell");
+  return shell.Popup(msg, 0, title, type);
+}
 
 // get parent path for current file
 const currentFilePath = process.argv[1];
@@ -19,7 +24,11 @@ dotenv.config({ path: envpath });
 
 // === GET ARGUMENTS FROM CLI ===
 if (process.argv.length < 4) {
-  console.error("Usage: node one.js <data.yml> <template.xlsx> [isOpen=false]");
+  messageBox(
+    "Usage: node one.js <data.yml> <template.xlsx> [isOpen=false]",
+    "Missing Arguments",
+    16 // error icon
+  );
   process.exit(1);
 }
 
@@ -52,15 +61,51 @@ const dd = String(today.getDate()).padStart(2, "0");
 const newFileName = `ActReco, ${parentFolderName}, ${yyyy}-${mm}-${dd}.xlsx`;
 const newFilePath = path.join(saveDir, newFileName);
 
-// === Copy whole Excel file instead of sheet ===
+// === Copy whole Excel file instead of sheet with retry mechanism ===
 console.log(`Copying whole Excel file to: ${newFilePath}`);
-fs.copyFileSync(sourceExcelPath, newFilePath);
 
-// === Run utils.js for processing ===
-const rootPath = path.dirname(contractFilePath);
-const sheetName = "App";
+// Function to attempt file copy with retries
+function copyFileWithRetry(source, destination, maxRetries = 1, delay = 1000) {
+  for (let attempt = 1; attempt <= maxRetries; attempt++) {
+    try {
+      // Remove destination file if it exists and is locked
+      if (fs.existsSync(destination)) {
+        try {
+          fs.unlinkSync(destination);
+        } catch (unlinkErr) {
+          console.warn(`⚠️ Could not remove existing file (attempt ${attempt}): ${unlinkErr.message}`);
+        }
+      }
+      
+      fs.copyFileSync(source, destination);
+      console.log("✅ File duplicated successfully.");
+      return true;
+    } catch (err) {
+      console.warn(`⚠️ Copy attempt ${attempt} failed: ${err.message}`);
+      
+      if (attempt === maxRetries) {
+        console.error(`❌ Failed to copy file after ${maxRetries} attempts`);
+        messageBox(
+          `Failed to copy Excel file. The file might be open in Excel or another application.\n\nError: ${err.message}`,
+          "File Copy Error",
+          16
+        );
+        process.exit(1);
+      }
+      
+      // Wait before retry
+      console.log(`Waiting ${delay}ms before retry...`);
+      const start = Date.now();
+      while (Date.now() - start < delay) {
+        // Busy wait
+      }
+    }
+  }
+  return false;
+}
 
-console.log("✅ File duplicated successfully.");
+// Attempt to copy the file
+copyFileWithRetry(sourceExcelPath, newFilePath);
 
 // === Column definitions ===
 const Pricings_Columns = { date: 3, amount: 4 };
@@ -97,32 +142,31 @@ try {
   } else {
     console.error("❌ Failed to parse YAML:", err.message);
   }
+  messageBox("YAML parsing failed. Please check your file.", "YAML Error", 16);
   process.exit(1);
 }
 
 // === Run utils.js tasks with env fallback ===
 run(
-  rootPath,
+  path.dirname(contractFilePath),
   newFilePath,
-  sheetName,
+  "App",
   "Pricings",
   Pricings_Columns,
   5,
   yamlData.PrepayMonth || process.env.PrepayMonth || 1,
   yamlData.Price1
 );
-run(rootPath, newFilePath, sheetName, "Bank-OT", Bank_OT_Columns, 4);
-run(rootPath, newFilePath, sheetName, "Bank-IN", Bank_IN_Columns, 4);
-run(rootPath, newFilePath, sheetName, "EHF-IN", EHF_IN_Columns, 4);
-run(rootPath, newFilePath, sheetName, "Card-OT", Card_OT_Columns, 4);
-run(rootPath, newFilePath, sheetName, "Card-IN", Card_IN_Columns, 4);
+run(path.dirname(contractFilePath), newFilePath, "App", "Bank-OT", Bank_OT_Columns, 4);
+run(path.dirname(contractFilePath), newFilePath, "App", "Bank-IN", Bank_IN_Columns, 4);
+run(path.dirname(contractFilePath), newFilePath, "App", "EHF-IN", EHF_IN_Columns, 4);
+run(path.dirname(contractFilePath), newFilePath, "App", "Card-OT", Card_OT_Columns, 4);
+run(path.dirname(contractFilePath), newFilePath, "App", "Card-IN", Card_IN_Columns, 4);
 
 // Ensure all values are strings and fallback to .env if missing
 for (const key in yamlData) {
   yamlData[key] = yamlData[key] == null ? "" : String(yamlData[key]);
 }
-
-// Add .env values if not already in yamlData
 for (const [key, value] of Object.entries(process.env)) {
   if (!(key in yamlData)) {
     yamlData[key] = value;
@@ -185,9 +229,10 @@ excelReplace.Visible = false;
 let workbookReplace, sheetReplace;
 try {
   workbookReplace = excelReplace.Workbooks.Open(newFilePath);
-  sheetReplace = workbookReplace.Sheets(sheetName);
+  sheetReplace = workbookReplace.Sheets("App");
 } catch (err) {
-  console.error(`❌ Sheet "${sheetName}" not found in ${newFilePath}`);
+  console.error(`❌ Sheet "App" not found in ${newFilePath}`);
+  messageBox(`Sheet "App" not found in ${newFilePath}`, "Excel Error", 16);
   if (workbookReplace) workbookReplace.Close();
   excelReplace.Quit();
   process.exit(1);
@@ -255,7 +300,7 @@ try {
 workbookReplace.Close();
 excelReplace.Quit();
 
-console.log(`✅ Placeholders replaced in sheet "${sheetName}" of ${newFilePath}`);
+console.log(`✅ Placeholders replaced in sheet "App" of ${newFilePath}`);
 
 // === Optionally open Excel ===
 if (isOpen == "true" || isOpen == "1") {
@@ -264,7 +309,7 @@ if (isOpen == "true" || isOpen == "1") {
   } else if (process.platform === "darwin") {
     exec(`open "${newFilePath}"`);
   } else {
-    console.warn("Platformani qo'llab-quvvatlanmaydi:", process.platform);
+    console.warn("Platform not supported:", process.platform);
   }
 }
 
