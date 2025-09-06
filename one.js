@@ -6,8 +6,16 @@ import yaml from "js-yaml";
 import { exec } from "child_process";
 import dotenv from "dotenv";
 
+
+// get parent path for current file
+const currentFilePath = process.argv[1];
+const currentDir = path.dirname(currentFilePath);
+
+// append .env to current path
+const envpath = path.join(currentDir, ".env");
+
 // === Load environment variables ===
-dotenv.config();
+dotenv.config({ path: envpath });
 
 // === GET ARGUMENTS FROM CLI ===
 if (process.argv.length < 4) {
