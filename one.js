@@ -129,17 +129,6 @@ function copyFileWithRetry(source, destination, maxRetries = 1, delay = 1000) {
 
 // Attempt to copy the file
 copyFileWithRetry(sourceExcelPath, newFilePath);
-
-// === Column definitions ===
-const Pricings_Columns = { date: 3, amount: 4 };
-
-const Bank_OT_Columns = { date: 6, amount: 7, path: 8 };
-const Bank_IN_Columns = { date: 9, amount: 10, path: 11 };
-const EHF_IN_Columns = { date: 12, amount: 13, path: 14 };
-const Card_OT_Columns = { date: 15, amount: 16, path: 17 };
-const Card_IN_Columns = { date: 18, amount: 19, path: 20 };
-const Bonuses_Columns = { date: 21, amount: 22, path: 23 };
-
 // === Placeholder Replacement ===
 let yamlData;
 try {
@@ -170,25 +159,128 @@ try {
   process.exit(1);
 }
 
-// === Run utils.js tasks with env fallback ===
-run(
-  path.dirname(contractFilePath),
-  newFilePath,
-  "App",
-  "Pricings",
-  Pricings_Columns,
-  5,
-  yamlData.PrepayMonth || process.env.PrepayMonth || 1,
-  yamlData.Price1
-);
+// === Auto-detect column indexes dynamically from cells.txt ===
 
+// 1. Read the list from cells.txt
+const cellsFilePath = path.join(currentDir, "cells.txt");
+let cellNames = [];
+if (fs.existsSync(cellsFilePath)) {
+  cellNames = fs
+    .readFileSync(cellsFilePath, "utf8")
+    .split(/\r?\n/)
+    .map((line) => line.trim())
+    .filter(Boolean);
+} else {
+  console.warn("⚠️ cells.txt not found — skipping dynamic detection.");
+  cellNames = [];
+}
 
+// 2. Determine which names have folders and which don't
+const baseDir = path.dirname(contractFilePath);
+const existingFolders = [];
+const missingFolders = [];
 
-run(path.dirname(contractFilePath), newFilePath, "App", "Bank-OT", Bank_OT_Columns, 4);
-run(path.dirname(contractFilePath), newFilePath, "App", "Bank-IN", Bank_IN_Columns, 4);
-run(path.dirname(contractFilePath), newFilePath, "App", "EHF-IN", EHF_IN_Columns, 4);
-run(path.dirname(contractFilePath), newFilePath, "App", "Card-OT", Card_OT_Columns, 4);
-run(path.dirname(contractFilePath), newFilePath, "App", "Card-IN", Card_IN_Columns, 4);
+for (const name of cellNames) {
+  if (fs.existsSync(path.join(baseDir, name))) {
+    existingFolders.push(name);
+  } else {
+    missingFolders.push(name);
+  }
+}
+
+if (existingFolders.length > 0) {
+  console.log("📁 Found matching folders:", existingFolders.join(", "));
+}
+if (missingFolders.length > 0) {
+  console.log("🚫 Missing folders:", missingFolders.join(", "));
+}
+
+// 3. Open Excel
+const excelApp = new winax.Object("Excel.Application");
+excelApp.Visible = false;
+let workbookApp, sheetApp;
+try {
+  workbookApp = excelApp.Workbooks.Open(newFilePath);
+  sheetApp = workbookApp.Sheets("App");
+} catch (err) {
+  console.error("❌ Could not open Excel to detect columns:", err.message);
+  messageBox("Excel open failed for column detection.", "Excel Error", 16);
+  excelApp.Quit();
+  process.exit(1);
+}
+
+const detectedColumns = {};
+
+// 4. For each entry in cells.txt, find its column in Excel
+for (const name of cellNames) {
+  const found = sheetApp.Cells.Find(name);
+  if (!found) {
+    console.warn(`⚠️ "${name}" not found in Excel sheet "App"`);
+    continue;
+  }
+
+  const colDate = found.Column;
+  const colAmount = colDate + 1;
+  const colPath = colDate + 2;
+
+  if (existingFolders.includes(name)) {
+    // ✅ Folder exists → store columns for later
+    if (name === "Pricings") {
+      // Pricings: only date & amount
+      detectedColumns[name] = {
+        date: colDate,
+        amount: colAmount
+      };
+      console.log(`💰 Pricings: date=${colDate}, amount=${colAmount}`);
+    } else {
+      // Normal: date, amount, path
+      detectedColumns[name] = {
+        date: colDate,
+        amount: colAmount,
+        path: colPath
+      };
+      console.log(`✅ ${name}: date=${colDate}, amount=${colAmount}, path=${colPath}`);
+    }
+  } else {
+    // 🚫 Folder missing → clear Excel cells for that section
+    console.log(`🧹 Clearing Excel data for missing folder "${name}"...`);
+    try {
+      const startRow = 4;
+      const endRow = 100;
+      const clearEndCol = name === "Pricings" ? colAmount : colPath;
+      sheetApp.Range(
+        sheetApp.Cells(startRow, colDate),
+        sheetApp.Cells(endRow, clearEndCol)
+      ).ClearContents();
+    } catch (err) {
+      console.warn(`⚠️ Failed to clear "${name}" area:`, err.message);
+    }
+  }
+}
+
+workbookApp.Save();
+workbookApp.Close(false);
+excelApp.Quit();
+
+// 5. Run the actual function
+for (const [section, cols] of Object.entries(detectedColumns)) {
+  if (section === "Pricings") {
+    console.log("💰 Running special Pricings process...");
+    run(
+      baseDir,
+      newFilePath,
+      "App",
+      "Pricings",
+      cols,
+      5,
+      yamlData.PrepayMonth || process.env.PrepayMonth || 1,
+      yamlData.Price1
+    );
+  } else {
+    run(baseDir, newFilePath, "App", section, cols, 4);
+  }
+}
+
 
 // Ensure all values are strings and fallback to .env if missing
 for (const key in yamlData) {

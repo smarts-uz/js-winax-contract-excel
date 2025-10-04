@@ -45,3 +45,7 @@ node "D:\Projects\Smart Software\JS\js-winax-contract-excel\one.js" "D:\Projects
 
 node "D:\Projects\Smart Software\JS\js-winax-contract-excel\all.js" "Z:\FileType\______\ALL.contractall" "D:\Projects\Smart Software\JS\js-winax-contract-excel\Testings 51.xlsx"
 node "D:\Projects\Smart Software\JS\js-winax-contract-excel\all.js" "Z:\FileType\______\ALL.contractall" ""
+
+
+node "D:\Projects\Smart Software\JS\js-winax-contract-excel\one.js" "z:\FileType\Testings\ISTS\ALL.contract" "D:\Projects\Smart Software\JS\js-winax-contract-excel\App\Testings 52.xlsx"
+
