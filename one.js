@@ -132,6 +132,7 @@ copyFileWithRetry(sourceExcelPath, newFilePath);
 
 // === Column definitions ===
 const Pricings_Columns = { date: 3, amount: 4 };
+
 const Bank_OT_Columns = { date: 6, amount: 7, path: 8 };
 const Bank_IN_Columns = { date: 9, amount: 10, path: 11 };
 const EHF_IN_Columns = { date: 12, amount: 13, path: 14 };
@@ -180,6 +181,9 @@ run(
   yamlData.PrepayMonth || process.env.PrepayMonth || 1,
   yamlData.Price1
 );
+
+
+
 run(path.dirname(contractFilePath), newFilePath, "App", "Bank-OT", Bank_OT_Columns, 4);
 run(path.dirname(contractFilePath), newFilePath, "App", "Bank-IN", Bank_IN_Columns, 4);
 run(path.dirname(contractFilePath), newFilePath, "App", "EHF-IN", EHF_IN_Columns, 4);
