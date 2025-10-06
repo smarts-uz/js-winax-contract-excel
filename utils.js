@@ -62,7 +62,6 @@ export function processFolders(sheet, items, startRow, columnMap, folderPrefix =
 
         if (columnMap.date !== undefined) sheet.Cells(row, columnMap.date).Value = dateStr;
         if (columnMap.amount !== undefined) sheet.Cells(row, columnMap.amount).Value = defaultprice;
-        if (columnMap.path !== undefined) sheet.Cells(row, columnMap.path).Value = "[DEFAULT PRICE]";
         row++;
         month++;
       }
@@ -97,7 +96,7 @@ export function processFolders(sheet, items, startRow, columnMap, folderPrefix =
 
       if (columnMap.date !== undefined) sheet.Cells(row, columnMap.date).Value = date;
       if (columnMap.amount !== undefined) sheet.Cells(row, columnMap.amount).Value = amount;
-      if (columnMap.path !== undefined) sheet.Cells(row, columnMap.path).Value = filePath;
+      
       row++;
     });
 
@@ -126,7 +125,7 @@ export function processFolders(sheet, items, startRow, columnMap, folderPrefix =
 
           if (columnMap.date !== undefined) sheet.Cells(row, columnMap.date).Value = dateStr;
           if (columnMap.amount !== undefined) sheet.Cells(row, columnMap.amount).Value = amount;
-          if (columnMap.path !== undefined) sheet.Cells(row, columnMap.path).Value = filePath;
+          
           row++;
           month++;
         }

@@ -239,7 +239,6 @@ for (const name of cellNames) {
       detectedColumns[name] = {
         date: colDate,
         amount: colAmount,
-        path: colPath,
         startRow
       };
       console.log(`✅ ${name}: date=${colDate}, amount=${colAmount}, path=${colPath}`);
