@@ -213,6 +213,10 @@ const detectedColumns = {};
 
 // 4. For each entry in cells.txt, find its column in Excel
 for (const name of cellNames) {
+
+
+    console.log(`🔍 Searching for "${name}" in Excel...`);
+
   const found = sheetApp.Cells.Find(name);
   if (!found) {
     console.warn(`⚠️ "${name}" not found in Excel sheet "App"`);
@@ -224,17 +228,20 @@ for (const name of cellNames) {
   const colPath = colDate + 2;
   const startRow = found.Row;
 
+
+  if (name === "Pricings") {
+    // Pricings: only date & amount
+    detectedColumns[name] = {
+      date: colDate,
+      amount: colAmount,
+      startRow
+    };
+    console.log(`💰 Pricings: date=${colDate}, amount=${colAmount}`);
+  }
+
   if (existingFolders.includes(name)) {
     // ✅ Folder exists → store columns for later
-    if (name === "Pricings") {
-      // Pricings: only date & amount
-      detectedColumns[name] = {
-        date: colDate,
-        amount: colAmount,
-        startRow
-      };
-      console.log(`💰 Pricings: date=${colDate}, amount=${colAmount}`);
-    } else {
+
       // Normal: date, amount, path
       detectedColumns[name] = {
         date: colDate,
@@ -242,7 +249,7 @@ for (const name of cellNames) {
         startRow
       };
       console.log(`✅ ${name}: date=${colDate}, amount=${colAmount}, path=${colPath}`);
-    }
+    
   } else {
     // 🚫 Folder missing → clear Excel cells for that section
     console.log(`🧹 Clearing Excel data for missing folder "${name}"...`);
@@ -262,6 +269,8 @@ for (const name of cellNames) {
 workbookApp.Save();
 workbookApp.Close(false);
 excelApp.Quit();
+
+
 
 // 5. Run the actual function
 for (const [section, cols] of Object.entries(detectedColumns)) {

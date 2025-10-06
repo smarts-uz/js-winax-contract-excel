@@ -1,0 +1,24 @@
+{
+  // Use IntelliSense to learn about possible attributes.
+  // Hover to view descriptions of existing attributes.
+  // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+  "version": "0.2.0",
+  "configurations": [
+    
+
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "Launch Program",
+      "skipFiles": [
+        "<node_internals>/**"
+      ],
+      "program": "${workspaceFolder}\\one.js",
+       "args": [
+      "d:\\FSystem\\ALL\\Humans\\Rentalls\\ErdunShi\\AETHERIS\\ALL.contract",
+      "d:\\Develop\\Manager\\App\\Company\\ActReco\\Projects\\v2\\Testings 56.xlsx"
+      // "arg1", "arg2"
+    ],
+    }
+  ]
+}
