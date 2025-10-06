@@ -222,6 +222,7 @@ for (const name of cellNames) {
   const colDate = found.Column;
   const colAmount = colDate + 1;
   const colPath = colDate + 2;
+  const startRow = found.Row;
 
   if (existingFolders.includes(name)) {
     // ✅ Folder exists → store columns for later
@@ -229,7 +230,8 @@ for (const name of cellNames) {
       // Pricings: only date & amount
       detectedColumns[name] = {
         date: colDate,
-        amount: colAmount
+        amount: colAmount,
+        startRow
       };
       console.log(`💰 Pricings: date=${colDate}, amount=${colAmount}`);
     } else {
@@ -237,7 +239,8 @@ for (const name of cellNames) {
       detectedColumns[name] = {
         date: colDate,
         amount: colAmount,
-        path: colPath
+        path: colPath,
+        startRow
       };
       console.log(`✅ ${name}: date=${colDate}, amount=${colAmount}, path=${colPath}`);
     }
@@ -245,7 +248,6 @@ for (const name of cellNames) {
     // 🚫 Folder missing → clear Excel cells for that section
     console.log(`🧹 Clearing Excel data for missing folder "${name}"...`);
     try {
-      const startRow = 4;
       const endRow = 100;
       const clearEndCol = name === "Pricings" ? colAmount : colPath;
       sheetApp.Range(
@@ -272,12 +274,12 @@ for (const [section, cols] of Object.entries(detectedColumns)) {
       "App",
       "Pricings",
       cols,
-      5,
+      cols.startRow,
       yamlData.PrepayMonth || process.env.PrepayMonth || 1,
       yamlData.Price1
     );
   } else {
-    run(baseDir, newFilePath, "App", section, cols, 4);
+    run(baseDir, newFilePath, "App", section, cols, cols.startRow);
   }
 }
 
